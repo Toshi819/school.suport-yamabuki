@@ -1,5 +1,5 @@
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import { collection, addDoc, getDocs, query, where, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { auth, db } from "../firebase.js";
 
 const dayNames = ["月", "火", "水", "木", "金"];
@@ -20,10 +20,6 @@ function buildEmptyTimetable() {
   });
 
   return grid;
-}
-
-function slotKey(day, period) {
-  return `${day}-${period}`;
 }
 
 function renderTimetable() {
@@ -51,12 +47,10 @@ function renderTimetable() {
 
     dayNames.forEach((day) => {
       const cell = document.createElement("button");
-      const key = slotKey(day, period);
       const subject = timetableData?.[day]?.[period];
 
       cell.type = "button";
       cell.className = `cell timetable-slot ${subject ? "filled" : ""}`;
-      cell.dataset.key = key;
       cell.dataset.day = day;
       cell.dataset.period = String(period);
 
@@ -70,7 +64,8 @@ function renderTimetable() {
       }
 
       cell.addEventListener("click", () => {
-        const params = new URLSearchParams({ day, period: String(period), classId: subject?.id || "" });
+        const params = new URLSearchParams({ day, period: String(period) });
+        if (subject?.id) params.set("classId", subject.id);
         window.location.href = `./class.html?${params.toString()}`;
       });
 

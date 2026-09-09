@@ -1,4 +1,4 @@
-import { doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, where } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { auth, db } from "../firebase.js";
 
 const form = document.getElementById("classForm");
@@ -18,8 +18,50 @@ function setFormValues(data = {}) {
   document.getElementById("floor").value = data.floor || "";
 }
 
+async function resolveTargetDocId() {
+  if (editingId) return editingId;
+
+  const currentUser = auth.currentUser;
+  if (!currentUser) return "";
+
+  const q = query(
+    collection(db, "classes"),
+    where("ownerUid", "==", currentUser.uid),
+    where("day", "==", day),
+    where("period", "==", Number(period))
+  );
+
+  const snapshot = await getDocs(q);
+  if (!snapshot.empty) {
+    return snapshot.docs[0].id;
+  }
+
+  return `${currentUser.uid}_${day}_${period}`;
+}
+
 async function loadClass() {
   if (!editingId) {
+    const currentUser = auth.currentUser;
+
+    if (currentUser) {
+      const q = query(
+        collection(db, "classes"),
+        where("ownerUid", "==", currentUser.uid),
+        where("day", "==", day),
+        where("period", "==", Number(period))
+      );
+
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        const existing = snapshot.docs[0];
+        const data = existing.data();
+        title.textContent = data.name || "授業詳細";
+        setFormValues(data);
+        deleteBtn.hidden = false;
+        return;
+      }
+    }
+
     title.textContent = "授業登録";
     setFormValues();
     return;
@@ -44,12 +86,13 @@ if (backBtn) {
 
 if (deleteBtn) {
   deleteBtn.addEventListener("click", async () => {
-    if (!editingId) return;
+    const targetId = editingId || (await resolveTargetDocId());
+    if (!targetId) return;
 
     const ok = window.confirm("この授業を時間割から削除しますか？");
     if (!ok) return;
 
-    await deleteDoc(doc(db, "classes", editingId));
+    await deleteDoc(doc(db, "classes", targetId));
     window.location.href = "./home.html";
   });
 }
@@ -71,8 +114,8 @@ if (form) {
       room: document.getElementById("room").value.trim(),
       floor: Number(document.getElementById("floor").value || 0),
       day,
-      period,
-      createdAt: new Date(),
+      period: Number(period),
+      updatedAt: new Date(),
     };
 
     if (!payload.name) {
@@ -80,11 +123,16 @@ if (form) {
       return;
     }
 
-    if (editingId) {
-      await setDoc(doc(db, "classes", editingId), { ...payload, updatedAt: new Date() }, { merge: true });
-    } else {
-      await setDoc(doc(db, "classes", `${currentUser.uid}_${day}_${period}`), payload);
+    const targetId = await resolveTargetDocId();
+    if (!targetId) {
+      alert("保存先を特定できませんでした");
+      return;
     }
+
+    await setDoc(doc(db, "classes", targetId), {
+      ...payload,
+      createdAt: (await getDoc(doc(db, "classes", targetId))).exists() ? (await getDoc(doc(db, "classes", targetId))).data().createdAt || new Date() : new Date(),
+    }, { merge: true });
 
     window.location.href = "./home.html";
   });
