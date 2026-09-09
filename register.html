@@ -6,6 +6,9 @@
     <title>StudyHub - 新規登録</title>
     <link rel="stylesheet" href="./css/style.css" />
     <link rel="stylesheet" href="./css/auth.css" />
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   </head>
   <body class="auth-shell">
     <div class="auth-card">
@@ -37,7 +40,9 @@
       </div>
     </div>
 
-    <script type="module" src="./js/auth/auth-guard.js"></script>
-    <script type="module" src="./js/auth/register.js"></script>
+    <script src="./firebase.js"></script>
+    <script src="./auth.js"></script>
+    <script src="./js/auth/auth-guard.js"></script>
+    <script src="./js/auth/register.js"></script>
   </body>
 </html>
