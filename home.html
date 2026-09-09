@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StudyHub - ホーム</title>
+    <link rel="stylesheet" href="./css/style.css" />
+    <link rel="stylesheet" href="./css/home.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">StudyHub</div>
+        <button id="logoutBtn" class="logout-btn" type="button">ログアウト</button>
+      </header>
+
+      <main>
+        <section class="schedule-card">
+          <h2>時間割</h2>
+          <div id="timetableGrid" class="timetable-grid" aria-live="polite"></div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./js/auth/auth-guard.js"></script>
+    <script type="module" src="./js/home.js"></script>
+  </body>
+</html>

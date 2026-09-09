@@ -1,128 +1,43 @@
 <!DOCTYPE html>
 <html lang="ja">
- 
-<head>
-    <meta charset="UTF-8">
- 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0">
- 
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>StudyHub - 新規登録</title>
- 
-    <link rel="stylesheet" href="css/style.css">
- 
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-</head>
- 
-<body>
- 
-<div class="login-container">
- 
-    <div class="login-card">
- 
-        <div class="logo">
-            <i class="fa-solid fa-book-open"></i>
+    <link rel="stylesheet" href="./css/style.css" />
+    <link rel="stylesheet" href="./css/auth.css" />
+  </head>
+  <body class="auth-shell">
+    <div class="auth-card">
+      <h1>新規登録</h1>
+      <p class="subtitle">StudyHubへようこそ</p>
+
+      <div class="form-block">
+        <div class="field">
+          <label for="username">ユーザー名</label>
+          <input id="username" type="text" placeholder="ユーザー名" />
         </div>
- 
-        <h1>新規登録</h1>
- 
-        <p class="subtitle">
-            StudyHubアカウントを作成
-        </p>
- 
-        <form id="registerForm">
- 
-            <div class="input-group">
- 
-                <label for="username">
-                    ユーザー名
-                </label>
- 
-                <input
-                    type="text"
-                    id="username"
-                    placeholder="ユーザー名を入力"
-                    maxlength="20"
-                    required>
- 
-            </div>
- 
-            <div class="input-group">
- 
-                <label for="password">
-                    パスワード
-                </label>
- 
-                <input
-                    type="password"
-                    id="password"
-                    placeholder="パスワードを入力"
-                    required>
- 
-            </div>
- 
-            <div class="input-group">
- 
-                <label for="password2">
-                    パスワード確認
-                </label>
- 
-                <input
-                    type="password"
-                    id="password2"
-                    placeholder="もう一度入力"
-                    required>
- 
-            </div>
- 
-            <button
-                type="submit"
-                class="main-btn"
-                id="registerBtn">
- 
-                <i class="fa-solid fa-user-plus"></i>
-                アカウント作成
- 
-            </button>
- 
-        </form>
- 
-        <div id="message" class="message"></div>
- 
-        <div class="divider">
-            <span>または</span>
+
+        <div class="field">
+          <label for="password">パスワード</label>
+          <input id="password" type="password" placeholder="パスワード" />
         </div>
- 
-        <button
-            type="button"
-            class="google-btn"
-            id="googleRegister">
- 
-            <i class="fa-brands fa-google"></i>
- 
-            Googleで登録
- 
-        </button>
- 
-        <div class="bottom-links">
- 
-            <a href="index.html">
- 
-                ログインはこちら
- 
-            </a>
- 
+
+        <div class="field">
+          <label for="passwordConfirm">パスワード確認</label>
+          <input id="passwordConfirm" type="password" placeholder="パスワード確認" />
         </div>
- 
+
+        <button id="registerBtn" class="primary-btn" type="button">登録</button>
+        <button id="googleRegisterBtn" class="secondary-btn" type="button">Googleで登録</button>
+      </div>
+
+      <div class="link-row">
+        <a href="./index.html">ログインへ戻る</a>
+      </div>
     </div>
- 
-</div>
- 
-<script type="module" src="js/register.js"></script>
- 
-</body>
- 
+
+    <script type="module" src="./js/auth/auth-guard.js"></script>
+    <script type="module" src="./js/auth/register.js"></script>
+  </body>
 </html>
