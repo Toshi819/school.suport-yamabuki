@@ -130,36 +130,64 @@
           <div class="detail-line"><strong>教室</strong><span id="roomValue">未設定</span></div>
           <div class="detail-line"><strong>階数</strong><span id="floorValue">-</span></div>
 
-          <div class="tab-list">
-            <button class="tab" type="button">地図</button>
-            <button class="tab" type="button">資料</button>
-            <button class="tab" type="button">赤シート</button>
-            <button class="tab" type="button">単語カード</button>
-            <button class="tab" type="button">問題</button>
-            <button class="tab" type="button">メモ</button>
-          </div>
-
-          <div class="map-box">地図を表示する</div>
-
           <form id="classForm" class="form-block">
             <div class="field">
-              <label for="className">授業名</label>
-              <input id="className" name="className" type="text" placeholder="例: 物理基礎" required />
+              <label for="daySelect">曜日</label>
+              <select id="daySelect" name="daySelect" required>
+                <option value="月">月</option>
+                <option value="火">火</option>
+                <option value="水">水</option>
+                <option value="木">木</option>
+                <option value="金">金</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="periodSelect">時限</label>
+              <select id="periodSelect" name="periodSelect" required>
+                <option value="1">1限</option>
+                <option value="2">2限</option>
+                <option value="3">3限</option>
+                <option value="4">4限</option>
+                <option value="5">5限</option>
+                <option value="6">6限</option>
+                <option value="7">7限</option>
+                <option value="8">8限</option>
+                <option value="9">9限</option>
+                <option value="10">10限</option>
+                <option value="11">11限</option>
+                <option value="12">12限</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="subjectSelect">授業を選ぶ</label>
+              <select id="subjectSelect" name="subjectSelect" required>
+                <option value="">授業を選択してください</option>
+                <option value="国語">国語</option>
+                <option value="数学">数学</option>
+                <option value="英語">英語</option>
+                <option value="理科">理科</option>
+                <option value="社会">社会</option>
+                <option value="情報">情報</option>
+                <option value="保健体育">保健体育</option>
+                <option value="美術">美術</option>
+              </select>
             </div>
 
             <div class="field">
               <label for="teacher">担当者</label>
-              <input id="teacher" name="teacher" type="text" placeholder="例: 山田先生" />
+              <input id="teacher" name="teacher" type="text" placeholder="例: 山田先生" readonly />
             </div>
 
             <div class="field">
               <label for="room">教室</label>
-              <input id="room" name="room" type="text" placeholder="例: 物理室" />
+              <input id="room" name="room" type="text" placeholder="例: 物理室" readonly />
             </div>
 
             <div class="field">
               <label for="floor">階数</label>
-              <input id="floor" name="floor" type="number" min="1" max="20" placeholder="5" />
+              <input id="floor" name="floor" type="number" min="1" max="20" placeholder="5" readonly />
             </div>
 
             <div class="actions">

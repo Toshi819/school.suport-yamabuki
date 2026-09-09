@@ -9,17 +9,35 @@
     measurementId: "G-774W58XF9E"
   };
 
-  if (!window.firebase) {
-    throw new Error("Firebase SDK is not loaded. Include firebase-app-compat, firebase-auth-compat, and firebase-firestore-compat scripts.");
+  const hasFirebaseSdk = !!window.firebase;
+
+  if (!hasFirebaseSdk) {
+    window.studyhubFirebase = {
+      app: null,
+      auth: null,
+      db: null,
+      isFallback: true,
+    };
+    return;
   }
 
-  if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
+  try {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    const app = firebase.app();
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    window.studyhubFirebase = { app, auth, db, isFallback: false };
+  } catch (error) {
+    console.error("Firebase initialization failed:", error);
+    window.studyhubFirebase = {
+      app: null,
+      auth: null,
+      db: null,
+      isFallback: true,
+    };
   }
-
-  const app = firebase.app();
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-
-  window.studyhubFirebase = { app, auth, db };
 })();

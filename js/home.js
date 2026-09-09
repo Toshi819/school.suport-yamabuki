@@ -1,7 +1,7 @@
 (function () {
   const { auth, db } = window.studyhubFirebase || {};
-  const { logoutUser } = window.studyhubAuth || {};
-  if (!auth || !db || !logoutUser) return;
+  const { logoutUser, getCurrentUser, getLocalClassesForCurrentUser } = window.studyhubAuth || {};
+  if (!logoutUser) return;
 
   const dayNames = ["月", "火", "水", "木", "金"];
   const periods = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
@@ -22,6 +22,12 @@
     });
 
     return grid;
+  }
+
+  function getResolvedCurrentUser() {
+    if (auth && auth.currentUser) return auth.currentUser;
+    if (currentUser) return currentUser;
+    return typeof getCurrentUser === "function" ? getCurrentUser() : null;
   }
 
   function renderTimetable() {
@@ -77,20 +83,42 @@
   }
 
   async function loadTimetable() {
-    if (!currentUser) return;
+    const user = getResolvedCurrentUser();
+    if (!user) {
+      timetableData = buildEmptyTimetable();
+      renderTimetable();
+      return;
+    }
 
-    const querySnapshot = await db.collection("classes").where("ownerUid", "==", currentUser.uid).get();
+    currentUser = user;
     const grid = buildEmptyTimetable();
 
-    querySnapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-      const day = data.day;
-      const period = Number(data.period);
-
-      if (dayNames.includes(day) && periods.includes(period)) {
-        grid[day][period] = { id: docSnap.id, ...data };
+    if (db && auth) {
+      try {
+        const querySnapshot = await db.collection("classes").where("ownerUid", "==", user.uid).get();
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const day = data.day;
+          const period = Number(data.period);
+          if (dayNames.includes(day) && periods.includes(period)) {
+            grid[day][period] = { id: docSnap.id, ...data };
+          }
+        });
+      } catch (error) {
+        console.warn("Firestore timetable load failed; using local storage data.", error);
       }
-    });
+    }
+
+    if (typeof getLocalClassesForCurrentUser === "function") {
+      const localClasses = getLocalClassesForCurrentUser(user.uid);
+      localClasses.forEach((data) => {
+        const day = data.day;
+        const period = Number(data.period);
+        if (dayNames.includes(day) && periods.includes(period)) {
+          grid[day][period] = { id: data.id, ...data };
+        }
+      });
+    }
 
     timetableData = grid;
     renderTimetable();
@@ -108,13 +136,27 @@
     });
   }
 
-  auth.onAuthStateChanged((user) => {
-    if (!user) {
-      window.location.href = "./index.html";
-      return;
-    }
-
-    currentUser = user;
+  const bootUser = getResolvedCurrentUser();
+  if (bootUser) {
+    currentUser = bootUser;
+    timetableData = buildEmptyTimetable();
+    renderTimetable();
     loadTimetable();
-  });
+    return;
+  }
+
+  if (auth && typeof auth.onAuthStateChanged === "function") {
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = "./index.html";
+        return;
+      }
+
+      currentUser = user;
+      loadTimetable();
+    });
+    return;
+  }
+
+  window.location.href = "./index.html";
 })();
