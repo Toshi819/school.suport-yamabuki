@@ -3,7 +3,7 @@ import { collection, getDocs, query, where } from "https://www.gstatic.com/fireb
 import { auth, db } from "../firebase.js";
 
 const dayNames = ["月", "火", "水", "木", "金"];
-const periods = [1, 2, 3, 4, 5, 6, 7, 8];
+const periods = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 const timetableGrid = document.getElementById("timetableGrid");
 
 let currentUser = null;

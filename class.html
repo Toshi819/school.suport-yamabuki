@@ -7,18 +7,98 @@
     <link rel="stylesheet" href="./css/style.css" />
     <link rel="stylesheet" href="./css/auth.css" />
     <style>
-      .class-card {
-        width: min(100%, 440px);
-        margin: 32px auto;
-        background: #fff;
-        border-radius: 24px;
-        padding: 24px 20px 18px;
-        box-shadow: 0 18px 44px rgba(22, 59, 99, 0.14);
+      body {
+        background: #f3f5f7;
       }
-      .class-card h1 {
-        margin: 0 0 20px;
+      .class-shell {
+        max-width: 420px;
+        margin: 0 auto;
+        min-height: 100vh;
+        padding: 24px 16px 32px;
+      }
+      .class-card {
+        background: #fff;
+        border-radius: 20px;
+        border: 2px solid rgba(22, 59, 99, 0.8);
+        box-shadow: 0 18px 44px rgba(22, 59, 99, 0.12);
+        padding: 0;
+        overflow: hidden;
+      }
+      .class-head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 18px 16px 10px;
+      }
+      .menu-icon {
+        width: 18px;
+        height: 18px;
+        position: relative;
+      }
+      .menu-icon::before,
+      .menu-icon::after,
+      .menu-icon span {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--navy);
+        border-radius: 3px;
+      }
+      .menu-icon::before { top: 0; }
+      .menu-icon span { top: 7px; }
+      .menu-icon::after { bottom: 0; }
+      .class-head h1 {
+        margin: 0;
+        font-size: 1.1rem;
         color: var(--navy);
-        font-size: 1.8rem;
+      }
+      .class-body {
+        padding: 0 16px 16px;
+      }
+      .detail-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(22, 59, 99, 0.15);
+        color: var(--navy);
+        font-weight: 700;
+      }
+      .detail-line strong {
+        font-size: 0.9rem;
+      }
+      .detail-line span {
+        color: var(--muted);
+      }
+      .tab-list {
+        display: grid;
+        gap: 10px;
+        margin: 18px 0 16px;
+      }
+      .tab {
+        width: 100%;
+        text-align: left;
+        padding: 12px 12px;
+        border: none;
+        border-bottom: 2px solid var(--blue);
+        background: transparent;
+        color: var(--navy);
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .map-box {
+        background: #e8ebee;
+        border: 2px solid rgba(22, 59, 99, 0.7);
+        min-height: 230px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--navy);
+        font-weight: 700;
+        margin-bottom: 16px;
       }
       .actions {
         display: grid;
@@ -36,37 +116,56 @@
     </style>
   </head>
   <body>
-    <div class="app-shell">
+    <div class="class-shell">
       <div class="class-card">
-        <h1 id="classTitle">授業登録</h1>
+        <div class="class-head">
+          <div class="menu-icon"><span></span></div>
+          <h1 id="classTitle">授業登録</h1>
+        </div>
 
-        <form id="classForm" class="form-block">
-          <div class="field">
-            <label for="className">授業名</label>
-            <input id="className" name="className" type="text" placeholder="例: 物理基礎" required />
+        <div class="class-body">
+          <div class="detail-line"><strong>教室</strong><span id="roomValue">未設定</span></div>
+          <div class="detail-line"><strong>階数</strong><span id="floorValue">-</span></div>
+
+          <div class="tab-list">
+            <button class="tab" type="button">地図</button>
+            <button class="tab" type="button">資料</button>
+            <button class="tab" type="button">赤シート</button>
+            <button class="tab" type="button">単語カード</button>
+            <button class="tab" type="button">問題</button>
+            <button class="tab" type="button">メモ</button>
           </div>
 
-          <div class="field">
-            <label for="teacher">担当者</label>
-            <input id="teacher" name="teacher" type="text" placeholder="例: 山田先生" />
-          </div>
+          <div class="map-box">地図を表示する</div>
 
-          <div class="field">
-            <label for="room">教室</label>
-            <input id="room" name="room" type="text" placeholder="例: 物理室" />
-          </div>
+          <form id="classForm" class="form-block">
+            <div class="field">
+              <label for="className">授業名</label>
+              <input id="className" name="className" type="text" placeholder="例: 物理基礎" required />
+            </div>
 
-          <div class="field">
-            <label for="floor">階数</label>
-            <input id="floor" name="floor" type="number" min="1" max="20" placeholder="5" />
-          </div>
+            <div class="field">
+              <label for="teacher">担当者</label>
+              <input id="teacher" name="teacher" type="text" placeholder="例: 山田先生" />
+            </div>
 
-          <div class="actions">
-            <button type="submit" class="primary-btn">保存</button>
-            <button id="backBtn" type="button" class="secondary-btn">時間割に戻る</button>
-            <button id="deleteBtn" type="button" class="danger-btn" hidden>削除</button>
-          </div>
-        </form>
+            <div class="field">
+              <label for="room">教室</label>
+              <input id="room" name="room" type="text" placeholder="例: 物理室" />
+            </div>
+
+            <div class="field">
+              <label for="floor">階数</label>
+              <input id="floor" name="floor" type="number" min="1" max="20" placeholder="5" />
+            </div>
+
+            <div class="actions">
+              <button type="submit" class="primary-btn">保存</button>
+              <button id="backBtn" type="button" class="secondary-btn">時間割に戻る</button>
+              <button id="deleteBtn" type="button" class="danger-btn" hidden>削除</button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
 
