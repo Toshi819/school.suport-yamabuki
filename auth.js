@@ -46,7 +46,7 @@
     return `${String(username).trim()}@schoolapp.local`;
   }
 
-  const useRemoteBackend = window.STUDYHUB_USE_FIREBASE === true && !!(db && auth && typeof navigator !== "undefined" && navigator.onLine !== false);
+  const useRemoteBackend = window.STUDYHUB_USE_FIREBASE !== false && !!(db && auth && typeof navigator !== "undefined" && navigator.onLine !== false);
 
   function getCurrentUser() {
     return readStorage(STORAGE_KEYS.currentUser, null);

@@ -37,6 +37,40 @@
         margin-bottom: 18px;
       }
 
+      .add-subject-panel {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin: 18px 0 22px;
+        padding: 16px;
+        border: 1px solid rgba(22, 59, 99, 0.12);
+        border-radius: 16px;
+        background: #f8fbff;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .field label {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--navy);
+      }
+
+      .field input,
+      .field select {
+        width: 100%;
+        min-height: 42px;
+        border-radius: 10px;
+        border: 1px solid rgba(22, 59, 99, 0.15);
+        background: white;
+        color: var(--navy);
+        padding: 8px 10px;
+      }
+
       .grid-wrap {
         overflow-x: auto;
       }
@@ -92,6 +126,12 @@
         color: var(--muted);
         font-size: 0.92rem;
       }
+
+      @media (max-width: 620px) {
+        .add-subject-panel {
+          grid-template-columns: 1fr;
+        }
+      }
     </style>
   </head>
   <body>
@@ -99,11 +139,75 @@
       <div class="card">
         <div class="top-row">
           <div>
-            <h1>時間割登録</h1>
-            <p class="subtitle">授業を全体で選んで、最後に「これで登録する」で固定にします</p>
+            <h1>授業登録・時間割選択</h1>
+            <p class="subtitle">まず授業を追加してから、曜日と時限ごとに選んで登録します</p>
           </div>
           <a href="./home.html" class="secondary-btn" style="display: inline-flex; align-items: center; justify-content: center;">ホームへ戻る</a>
         </div>
+
+        <div class="add-subject-panel">
+          <div class="field">
+            <label for="subjectName">授業名</label>
+            <select id="subjectName">
+              <option value="国語">国語</option>
+              <option value="数学">数学</option>
+              <option value="英語">英語</option>
+              <option value="理科">理科</option>
+              <option value="社会">社会</option>
+              <option value="情報">情報</option>
+              <option value="保健体育">保健体育</option>
+              <option value="美術">美術</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="teacherInput">先生</label>
+            <select id="teacherInput">
+              <option value="田中先生">田中先生</option>
+              <option value="佐藤先生">佐藤先生</option>
+              <option value="伊藤先生">伊藤先生</option>
+              <option value="山本先生">山本先生</option>
+              <option value="中村先生">中村先生</option>
+              <option value="松本先生">松本先生</option>
+              <option value="小林先生">小林先生</option>
+              <option value="渡辺先生">渡辺先生</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="roomInput">教室</label>
+            <select id="roomInput">
+              <option value="101">101</option>
+              <option value="102">102</option>
+              <option value="202">202</option>
+              <option value="303">303</option>
+              <option value="404">404</option>
+              <option value="ラボ1">ラボ1</option>
+              <option value="体育館">体育館</option>
+              <option value="美術室">美術室</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="periodInput">時限</label>
+            <select id="periodInput">
+              <option value="1">1限</option>
+              <option value="2">2限</option>
+              <option value="3">3限</option>
+              <option value="4">4限</option>
+              <option value="5">5限</option>
+              <option value="6">6限</option>
+              <option value="7">7限</option>
+              <option value="8">8限</option>
+              <option value="9">9限</option>
+              <option value="10">10限</option>
+              <option value="11">11限</option>
+              <option value="12">12限</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column: 1 / -1;">
+            <button id="addSubjectBtn" class="primary-btn" type="button">授業を追加</button>
+          </div>
+        </div>
+
+        <div id="status" class="note">授業を追加してから、下の時間割表で曜日と時限を選んで登録します。</div>
 
         <form id="scheduleForm">
           <div class="grid-wrap">
@@ -114,8 +218,6 @@
             <button type="submit" class="primary-btn">これで登録する</button>
           </div>
         </form>
-
-        <div class="note">授業は授業登録ページで設定した一覧から選びます。</div>
       </div>
     </div>
 

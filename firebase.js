@@ -32,7 +32,7 @@
     const db = firebase.firestore();
 
     window.studyhubFirebase = { app, auth, db, isFallback: false };
-    window.STUDYHUB_USE_FIREBASE = false;
+    window.STUDYHUB_USE_FIREBASE = true;
   } catch (error) {
     console.error("Firebase initialization failed:", error);
     window.studyhubFirebase = {

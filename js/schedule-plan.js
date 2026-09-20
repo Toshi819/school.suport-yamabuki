@@ -3,9 +3,16 @@
   const periods = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
   const grid = document.getElementById("scheduleGrid");
   const form = document.getElementById("scheduleForm");
+  const addSubjectBtn = document.getElementById("addSubjectBtn");
+  const subjectNameInput = document.getElementById("subjectName");
+  const teacherInput = document.getElementById("teacherInput");
+  const roomInput = document.getElementById("roomInput");
+  const periodInput = document.getElementById("periodInput");
+  const status = document.getElementById("status");
 
   const getCurrentUser = window.studyhubAuth?.getCurrentUser;
   const getLocalSubjects = window.studyhubAuth?.getLocalSubjects;
+  const upsertLocalSubject = window.studyhubAuth?.upsertLocalSubject;
   const upsertLocalClass = window.studyhubAuth?.upsertLocalClass;
   const auth = window.studyhubFirebase?.auth;
   const db = window.studyhubFirebase?.db;
@@ -82,6 +89,38 @@
         wrapper.appendChild(select);
         grid.appendChild(wrapper);
       });
+    });
+  }
+
+  if (addSubjectBtn) {
+    addSubjectBtn.addEventListener("click", () => {
+      const name = subjectNameInput ? String(subjectNameInput.value || "").trim() : "";
+      const teacher = teacherInput ? String(teacherInput.value || "").trim() : "";
+      const room = roomInput ? String(roomInput.value || "").trim() : "";
+      const period = Number(periodInput ? periodInput.value || 1 : 1);
+
+      if (!name || !teacher || !room) {
+        alert("授業名・先生・教室を選択してください");
+        return;
+      }
+
+      if (typeof upsertLocalSubject === "function") {
+        upsertLocalSubject(name, {
+          name,
+          teacher,
+          room,
+          floor: 1,
+          day: "月",
+          period,
+          updatedAt: new Date(),
+        });
+      }
+
+      if (status) {
+        status.textContent = `${name} を授業一覧に追加しました。`;
+      }
+
+      renderGrid();
     });
   }
 

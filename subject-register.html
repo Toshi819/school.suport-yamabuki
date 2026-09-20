@@ -2,126 +2,17 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="refresh" content="0; url=./schedule-plan.html" />
     <title>StudyHub - 授業登録</title>
-    <link rel="stylesheet" href="./css/style.css" />
-    <link rel="stylesheet" href="./css/auth.css" />
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <style>
-      body { background: #f3f5f7; }
-      .shell { max-width: 760px; margin: 0 auto; min-height: 100vh; padding: 24px 16px 32px; }
-      .card { background: #fff; border-radius: 20px; border: 2px solid rgba(22, 59, 99, 0.8); box-shadow: 0 18px 44px rgba(22,59,99,0.12); padding: 20px; }
-      .manual-form { display: grid; gap: 16px; margin-top: 20px; }
-      .manual-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-      .subject-list { margin-top: 20px; display: grid; gap: 10px; }
-      .subject-item { border: 1px solid #dfe7f6; border-radius: 12px; padding: 10px 12px; }
-      .meta { margin-top: 12px; color: var(--muted); font-size: 0.9rem; }
-      .action-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
-      @media (max-width: 520px) { .manual-grid { grid-template-columns: 1fr; } }
+      body { font-family: sans-serif; display: grid; place-items: center; min-height: 100vh; background: #f3f5f7; color: #163b63; }
+      .note { background: white; border-radius: 18px; padding: 24px 28px; box-shadow: 0 18px 44px rgba(22, 59, 99, 0.12); }
     </style>
   </head>
   <body>
-    <div class="shell">
-      <div class="card">
-        <h1>授業登録</h1>
-        <p class="subtitle">1年間で変わらない授業を登録して、時間割では選ぶだけにします</p>
-
-        <div class="manual-form">
-          <div class="manual-grid">
-            <div class="field">
-              <label for="subjectName">授業名</label>
-              <select id="subjectName">
-                <option value="国語">国語</option>
-                <option value="数学">数学</option>
-                <option value="英語">英語</option>
-                <option value="理科">理科</option>
-                <option value="社会">社会</option>
-                <option value="情報">情報</option>
-                <option value="保健体育">保健体育</option>
-                <option value="美術">美術</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="teacherInput">担当者</label>
-              <select id="teacherInput">
-                <option value="田中先生">田中先生</option>
-                <option value="佐藤先生">佐藤先生</option>
-                <option value="伊藤先生">伊藤先生</option>
-                <option value="山本先生">山本先生</option>
-                <option value="中村先生">中村先生</option>
-                <option value="松本先生">松本先生</option>
-                <option value="小林先生">小林先生</option>
-                <option value="渡辺先生">渡辺先生</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="roomInput">教室</label>
-              <select id="roomInput">
-                <option value="101">101</option>
-                <option value="102">102</option>
-                <option value="202">202</option>
-                <option value="303">303</option>
-                <option value="404">404</option>
-                <option value="ラボ1">ラボ1</option>
-                <option value="体育館">体育館</option>
-                <option value="美術室">美術室</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="floorInput">階数</label>
-              <select id="floorInput">
-                <option value="1">1階</option>
-                <option value="2">2階</option>
-                <option value="3">3階</option>
-                <option value="4">4階</option>
-                <option value="5">5階</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="dayInput">曜日</label>
-              <select id="dayInput">
-                <option value="月">月</option>
-                <option value="火">火</option>
-                <option value="水">水</option>
-                <option value="木">木</option>
-                <option value="金">金</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="periodInput">時限</label>
-              <select id="periodInput">
-                <option value="1">1限</option>
-                <option value="2">2限</option>
-                <option value="3">3限</option>
-                <option value="4">4限</option>
-                <option value="5">5限</option>
-                <option value="6">6限</option>
-                <option value="7">7限</option>
-                <option value="8">8限</option>
-                <option value="9">9限</option>
-                <option value="10">10限</option>
-                <option value="11">11限</option>
-                <option value="12">12限</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="action-row">
-            <button id="addSubjectBtn" class="primary-btn" type="button">授業を追加</button>
-            <a href="./home.html" class="secondary-btn" style="display: inline-flex; align-items: center; justify-content: center;">時間割に戻る</a>
-          </div>
-        </div>
-
-        <div id="status" class="meta">授業名と曜日・時限を入力して登録してください。</div>
-        <div id="subjectList" class="subject-list"></div>
-      </div>
+    <div class="note">
+      <p>授業登録画面へ移動しています...</p>
+      <p><a href="./schedule-plan.html">ここを押して続ける</a></p>
     </div>
-
-    <script src="./firebase.js?v=20260920"></script>
-    <script src="./auth.js?v=20260920"></script>
-    <script src="./js/auth/auth-guard.js?v=20260920"></script>
-    <script src="./js/subjects.js?v=20260920"></script>
   </body>
 </html>
