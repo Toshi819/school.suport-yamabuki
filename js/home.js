@@ -54,10 +54,9 @@
       timetableGrid.appendChild(periodCell);
 
       dayNames.forEach((day) => {
-        const cell = document.createElement("button");
+        const cell = document.createElement("div");
         const subject = timetableData?.[day]?.[period];
 
-        cell.type = "button";
         cell.className = `cell timetable-slot ${subject ? "filled" : ""}`;
         cell.dataset.day = day;
         cell.dataset.period = String(period);
@@ -70,12 +69,6 @@
         } else {
           cell.innerHTML = "<span>＋</span>";
         }
-
-        cell.addEventListener("click", () => {
-          const params = new URLSearchParams({ day, period: String(period) });
-          if (subject?.id) params.set("classId", subject.id);
-          window.location.href = `./class.html?${params.toString()}`;
-        });
 
         timetableGrid.appendChild(cell);
       });
@@ -93,22 +86,6 @@
     currentUser = user;
     const grid = buildEmptyTimetable();
 
-    if (db && auth) {
-      try {
-        const querySnapshot = await db.collection("classes").where("ownerUid", "==", user.uid).get();
-        querySnapshot.forEach((docSnap) => {
-          const data = docSnap.data();
-          const day = data.day;
-          const period = Number(data.period);
-          if (dayNames.includes(day) && periods.includes(period)) {
-            grid[day][period] = { id: docSnap.id, ...data };
-          }
-        });
-      } catch (error) {
-        console.warn("Firestore timetable load failed; using local storage data.", error);
-      }
-    }
-
     if (typeof getLocalClassesForCurrentUser === "function") {
       const localClasses = getLocalClassesForCurrentUser(user.uid);
       localClasses.forEach((data) => {
@@ -122,6 +99,24 @@
 
     timetableData = grid;
     renderTimetable();
+
+    if (db && auth) {
+      try {
+        const querySnapshot = await db.collection("classes").where("ownerUid", "==", user.uid).get();
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const day = data.day;
+          const period = Number(data.period);
+          if (dayNames.includes(day) && periods.includes(period)) {
+            grid[day][period] = { id: docSnap.id, ...data };
+          }
+        });
+        timetableData = grid;
+        renderTimetable();
+      } catch (error) {
+        console.warn("Firestore timetable load failed; keeping local storage data.", error);
+      }
+    }
   }
 
   if (logoutBtn) {

@@ -22,10 +22,21 @@
       }
 
       try {
+        sessionStorage.clear();
+        localStorage.removeItem("studyhub_current_user_v1");
+        if (window.studyhubAuth?.setCurrentUser) {
+          window.studyhubAuth.setCurrentUser(null);
+        }
+        sessionStorage.setItem("studyhub_registration_in_progress", "true");
         await registerWithEmail(username, password);
+        const currentUser = window.studyhubAuth?.getCurrentUser?.();
+        if (!currentUser) {
+          throw new Error("ユーザー情報の保存に失敗しました");
+        }
         alert("登録が完了しました");
-        window.location.href = "./home.html";
+        window.location.href = "./schedule-plan.html";
       } catch (error) {
+        sessionStorage.removeItem("studyhub_registration_in_progress");
         console.error(error);
         alert("登録に失敗しました。入力内容を確認してください。");
       }
@@ -35,9 +46,11 @@
   if (googleRegisterBtn) {
     googleRegisterBtn.addEventListener("click", async () => {
       try {
+        sessionStorage.setItem("studyhub_registration_in_progress", "true");
         await loginWithGoogle();
-        window.location.href = "./home.html";
+        window.location.href = "./schedule-plan.html";
       } catch (error) {
+        sessionStorage.removeItem("studyhub_registration_in_progress");
         console.error(error);
         alert("Googleアカウントでの登録に失敗しました。");
       }

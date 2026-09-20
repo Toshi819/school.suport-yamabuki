@@ -82,8 +82,8 @@
       const day = dayInput ? dayInput.value : "月";
       const period = Number(periodInput ? periodInput.value || 1 : 1);
 
-      if (!name) {
-        alert("授業名を入力してください");
+      if (!name || !teacher || !room) {
+        alert("授業名・担当者・教室を選択してください");
         return;
       }
 
@@ -110,11 +110,11 @@
           });
         }
 
-        if (status) status.textContent = `${name} を授業マスタに追加しました。`;
-        if (subjectNameInput) subjectNameInput.value = "";
-        if (teacherInput) teacherInput.value = "";
-        if (roomInput) roomInput.value = "";
-        if (floorInput) floorInput.value = "";
+        if (status) status.textContent = `${name} を授業登録しました。`;
+        if (subjectNameInput) subjectNameInput.value = "国語";
+        if (teacherInput) teacherInput.value = "田中先生";
+        if (roomInput) roomInput.value = "101";
+        if (floorInput) floorInput.value = "1";
         if (dayInput) dayInput.value = "月";
         if (periodInput) periodInput.value = "1";
         await renderSubjects();

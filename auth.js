@@ -46,6 +46,8 @@
     return `${String(username).trim()}@schoolapp.local`;
   }
 
+  const useRemoteBackend = window.STUDYHUB_USE_FIREBASE === true && !!(db && auth && typeof navigator !== "undefined" && navigator.onLine !== false);
+
   function getCurrentUser() {
     return readStorage(STORAGE_KEYS.currentUser, null);
   }
@@ -114,7 +116,7 @@
   }
 
   async function getNextUserId() {
-    if (db && auth) {
+    if (useRemoteBackend) {
       const counterRef = db.collection("counters").doc("userCounter");
       const counterSnap = await counterRef.get();
       const current = Number(counterSnap.exists ? counterSnap.data().count || 0 : 0);
@@ -129,7 +131,7 @@
   }
 
   async function ensureUserProfile(user, extra = {}) {
-    if (db && auth) {
+    if (useRemoteBackend) {
       const userRef = db.collection("users").doc(user.uid);
       const userSnap = await userRef.get();
 
@@ -190,21 +192,6 @@
       throw new Error("ユーザー名とパスワードを入力してください");
     }
 
-    if (db && auth) {
-      try {
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        const profile = await ensureUserProfile(userCredential.user, {
-          username: safeUsername,
-          email,
-          provider: "password",
-          password,
-        });
-        return { user: userCredential.user, profile };
-      } catch (error) {
-        console.warn("Firebase email registration failed, falling back to local storage.", error);
-      }
-    }
-
     const users = getLocalUsers();
     const existingUser = Object.values(users).find((entry) => entry.username === safeUsername || entry.email === email);
     if (existingUser) {
@@ -240,7 +227,7 @@
     const safeUsername = String(username || "").trim();
     const email = toEmail(safeUsername);
 
-    if (db && auth) {
+    if (useRemoteBackend) {
       try {
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
         const profile = await ensureUserProfile(userCredential.user, {
@@ -276,21 +263,6 @@
   }
 
   async function loginWithGoogle() {
-    if (db && auth) {
-      try {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        const result = await auth.signInWithPopup(provider);
-        const profile = await ensureUserProfile(result.user, {
-          username: result.user.displayName || "ユーザー",
-          email: result.user.email || "",
-          provider: "google.com",
-        });
-        return { user: result.user, profile };
-      } catch (error) {
-        console.warn("Firebase Google login failed, falling back to local storage.", error);
-      }
-    }
-
     const uid = `google_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     const user = {
       uid,
@@ -312,9 +284,6 @@
   }
 
   async function logoutUser() {
-    if (db && auth) {
-      await auth.signOut();
-    }
     setCurrentUser(null);
   }
 
@@ -344,19 +313,6 @@
       return 0;
     }
 
-    if (db && auth) {
-      const batch = db.batch();
-      normalizedRows.forEach((subject) => {
-        const ref = db.collection("subjects").doc(subject.name);
-        batch.set(ref, {
-          ...subject,
-          createdAt: new Date(),
-        }, { merge: true });
-      });
-      await batch.commit();
-      return normalizedRows.length;
-    }
-
     const subjects = getLocalSubjects();
     normalizedRows.forEach((subject) => {
       subjects[subject.name] = {
@@ -369,10 +325,6 @@
   }
 
   function observeAuth(callback) {
-    if (db && auth) {
-      return auth.onAuthStateChanged(callback);
-    }
-
     callback(getCurrentUser());
     return () => {};
   }

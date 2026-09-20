@@ -1,12 +1,12 @@
 (function () {
   const firebaseConfig = {
-    apiKey: "AIzaSyADn6N0xVVY6qvypY3OSi1hRz2xZaaFQaw",
-    authDomain: "school-9238e.firebaseapp.com",
-    projectId: "school-9238e",
-    storageBucket: "school-9238e.firebasestorage.app",
-    messagingSenderId: "724294214772",
-    appId: "1:724294214772:web:afcc9a2e6cf567afb05d21",
-    measurementId: "G-774W58XF9E"
+    apiKey: "AIzaSyD2uBPIxR1kK6GCCe7nVMJYbuqMOaBOJlU",
+    authDomain: "yamabuki-56345.firebaseapp.com",
+    projectId: "yamabuki-56345",
+    storageBucket: "yamabuki-56345.firebasestorage.app",
+    messagingSenderId: "624370846183",
+    appId: "1:624370846183:web:f3265610473c234bfb1542",
+    measurementId: "G-5Y62H21GTE"
   };
 
   const hasFirebaseSdk = !!window.firebase;
@@ -18,6 +18,7 @@
       db: null,
       isFallback: true,
     };
+    window.STUDYHUB_USE_FIREBASE = false;
     return;
   }
 
@@ -31,6 +32,7 @@
     const db = firebase.firestore();
 
     window.studyhubFirebase = { app, auth, db, isFallback: false };
+    window.STUDYHUB_USE_FIREBASE = false;
   } catch (error) {
     console.error("Firebase initialization failed:", error);
     window.studyhubFirebase = {
@@ -39,5 +41,6 @@
       db: null,
       isFallback: true,
     };
+    window.STUDYHUB_USE_FIREBASE = false;
   }
 })();

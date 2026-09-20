@@ -29,23 +29,55 @@
         <p class="subtitle">1年間で変わらない授業を登録して、時間割では選ぶだけにします</p>
 
         <div class="manual-form">
-          <div class="field">
-            <label for="subjectName">授業名</label>
-            <input id="subjectName" type="text" placeholder="例: 数学" />
-          </div>
-
           <div class="manual-grid">
             <div class="field">
+              <label for="subjectName">授業名</label>
+              <select id="subjectName">
+                <option value="国語">国語</option>
+                <option value="数学">数学</option>
+                <option value="英語">英語</option>
+                <option value="理科">理科</option>
+                <option value="社会">社会</option>
+                <option value="情報">情報</option>
+                <option value="保健体育">保健体育</option>
+                <option value="美術">美術</option>
+              </select>
+            </div>
+            <div class="field">
               <label for="teacherInput">担当者</label>
-              <input id="teacherInput" type="text" placeholder="例: 佐藤先生" />
+              <select id="teacherInput">
+                <option value="田中先生">田中先生</option>
+                <option value="佐藤先生">佐藤先生</option>
+                <option value="伊藤先生">伊藤先生</option>
+                <option value="山本先生">山本先生</option>
+                <option value="中村先生">中村先生</option>
+                <option value="松本先生">松本先生</option>
+                <option value="小林先生">小林先生</option>
+                <option value="渡辺先生">渡辺先生</option>
+              </select>
             </div>
             <div class="field">
               <label for="roomInput">教室</label>
-              <input id="roomInput" type="text" placeholder="例: 202" />
+              <select id="roomInput">
+                <option value="101">101</option>
+                <option value="102">102</option>
+                <option value="202">202</option>
+                <option value="303">303</option>
+                <option value="404">404</option>
+                <option value="ラボ1">ラボ1</option>
+                <option value="体育館">体育館</option>
+                <option value="美術室">美術室</option>
+              </select>
             </div>
             <div class="field">
               <label for="floorInput">階数</label>
-              <input id="floorInput" type="number" min="1" max="20" placeholder="2" />
+              <select id="floorInput">
+                <option value="1">1階</option>
+                <option value="2">2階</option>
+                <option value="3">3階</option>
+                <option value="4">4階</option>
+                <option value="5">5階</option>
+              </select>
             </div>
             <div class="field">
               <label for="dayInput">曜日</label>
@@ -87,9 +119,9 @@
       </div>
     </div>
 
-    <script src="./firebase.js"></script>
-    <script src="./auth.js"></script>
-    <script src="./js/auth/auth-guard.js"></script>
-    <script src="./js/subjects.js"></script>
+    <script src="./firebase.js?v=20260920"></script>
+    <script src="./auth.js?v=20260920"></script>
+    <script src="./js/auth/auth-guard.js?v=20260920"></script>
+    <script src="./js/subjects.js?v=20260920"></script>
   </body>
 </html>

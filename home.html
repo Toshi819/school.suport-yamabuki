@@ -13,13 +13,12 @@
   <body>
     <div class="app-shell">
       <header class="topbar">
+        <button class="menu-button" type="button" aria-label="メニューを開く">
+          <span></span><span></span><span></span>
+        </button>
         <div class="brand">StudyHub</div>
         <button id="logoutBtn" class="logout-btn" type="button">ログアウト</button>
       </header>
-
-      <div style="margin: 12px 0 18px; display: flex; justify-content: flex-end;">
-        <a href="./subject-register.html" class="secondary-btn" style="display: inline-block; text-align: center;">授業登録</a>
-      </div>
 
       <main>
         <section class="schedule-card">
@@ -27,11 +26,25 @@
           <div id="timetableGrid" class="timetable-grid" aria-live="polite"></div>
         </section>
       </main>
+
+      <nav class="bottom-nav" aria-label="メインメニュー">
+        <a href="./home.html">地図</a>
+        <a href="./home.html">赤シート</a>
+        <a class="active" href="./home.html">授業</a>
+        <a href="./home.html">カード</a>
+        <a href="./home.html">ファイル</a>
+      </nav>
     </div>
 
-    <script src="./firebase.js"></script>
-    <script src="./auth.js"></script>
-    <script src="./js/auth/auth-guard.js"></script>
-    <script src="./js/home.js"></script>
+    <script src="./firebase.js?v=20260920"></script>
+    <script src="./auth.js?v=20260920"></script>
+    <script src="./js/auth/auth-guard.js?v=20260920"></script>
+    <script>
+      window.addEventListener("load", () => {
+        const script = document.createElement("script");
+        script.src = "./js/home.js?v=20260920";
+        document.body.appendChild(script);
+      });
+    </script>
   </body>
 </html>
