@@ -46,7 +46,7 @@
     return `${String(username).trim()}@schoolapp.local`;
   }
 
-  const useRemoteBackend = window.STUDYHUB_USE_FIREBASE !== false && !!(db && auth && typeof navigator !== "undefined" && navigator.onLine !== false);
+  const useRemoteBackend = !!(db && auth && typeof navigator !== "undefined" && navigator.onLine !== false);
 
   function getCurrentUser() {
     return readStorage(STORAGE_KEYS.currentUser, null);
@@ -132,38 +132,42 @@
 
   async function ensureUserProfile(user, extra = {}) {
     if (useRemoteBackend) {
-      const userRef = db.collection("users").doc(user.uid);
-      const userSnap = await userRef.get();
+      try {
+        const userRef = db.collection("users").doc(user.uid);
+        const userSnap = await userRef.get();
 
-      if (!userSnap.exists) {
-        const nextUserId = await getNextUserId();
+        if (!userSnap.exists) {
+          const nextUserId = await getNextUserId();
+          const profile = {
+            uid: user.uid,
+            userId: nextUserId,
+            username: user.displayName || extra.username || "ユーザー",
+            email: user.email || extra.email || "",
+            role: "student",
+            provider: user.providerData?.[0]?.providerId || extra.provider || "password",
+            createdAt: new Date(),
+            lastLogin: new Date(),
+            ...extra,
+          };
+
+          await userRef.set(profile, { merge: true });
+          return profile;
+        }
+
         const profile = {
-          uid: user.uid,
-          userId: nextUserId,
-          username: user.displayName || extra.username || "ユーザー",
-          email: user.email || extra.email || "",
-          role: "student",
-          provider: user.providerData?.[0]?.providerId || extra.provider || "password",
-          createdAt: new Date(),
+          ...userSnap.data(),
+          username: user.displayName || extra.username || userSnap.data().username || "ユーザー",
+          email: user.email || extra.email || userSnap.data().email || "",
+          provider: user.providerData?.[0]?.providerId || extra.provider || userSnap.data().provider || "password",
           lastLogin: new Date(),
           ...extra,
         };
 
         await userRef.set(profile, { merge: true });
         return profile;
+      } catch (error) {
+        console.warn("Firebase profile sync failed, using local storage fallback.", error);
       }
-
-      const profile = {
-        ...userSnap.data(),
-        username: user.displayName || extra.username || userSnap.data().username || "ユーザー",
-        email: user.email || extra.email || userSnap.data().email || "",
-        provider: user.providerData?.[0]?.providerId || extra.provider || userSnap.data().provider || "password",
-        lastLogin: new Date(),
-        ...extra,
-      };
-
-      await userRef.set(profile, { merge: true });
-      return profile;
     }
 
     const userRecord = {
@@ -210,6 +214,23 @@
       userId: `SH-${String(Object.keys(users).length + 1).padStart(6, "0")}`,
       password,
     };
+
+    try {
+      if (useRemoteBackend && auth && typeof auth.createUserWithEmailAndPassword === "function") {
+        const firebaseUser = await auth.createUserWithEmailAndPassword(email, password);
+        const userData = firebaseUser.user;
+        const firebaseProfile = await ensureUserProfile(userData, {
+          username: safeUsername,
+          email,
+          provider: "password",
+          password,
+        });
+        setCurrentUser({ ...userData, ...firebaseProfile });
+        return { user: userData, profile: firebaseProfile };
+      }
+    } catch (error) {
+      console.warn("Firebase registration failed; using local storage fallback.", error);
+    }
 
     const profile = await ensureUserProfile(user, {
       username: safeUsername,
@@ -263,6 +284,16 @@
   }
 
   async function loginWithGoogle() {
+    if (useRemoteBackend && auth && typeof auth.signInWithPopup === "function") {
+      const provider = new window.studyhubFirebase.GoogleAuthProvider();
+      const userCredential = await auth.signInWithPopup(provider);
+      const profile = await ensureUserProfile(userCredential.user, {
+        provider: "google.com",
+      });
+      setCurrentUser({ ...userCredential.user, ...profile });
+      return { user: userCredential.user, profile };
+    }
+
     const uid = `google_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     const user = {
       uid,
@@ -284,6 +315,9 @@
   }
 
   async function logoutUser() {
+    if (useRemoteBackend && auth && typeof auth.signOut === "function") {
+      await auth.signOut();
+    }
     setCurrentUser(null);
   }
 

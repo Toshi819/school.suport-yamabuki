@@ -136,8 +136,36 @@
     renderGrid();
   }
 
+  async function persistScheduleEntry(item, currentUser) {
+    const payload = {
+      ownerUid: currentUser.uid,
+      name: item.name,
+      teacher: item.teacher || "",
+      room: item.room || "",
+      floor: Number(item.floor || 0),
+      day: item.day,
+      period: Number(item.period),
+      updatedAt: new Date(),
+      createdAt: item.createdAt || new Date(),
+    };
+
+    if (db && auth) {
+      try {
+        await db.collection("classes").doc(item.id).set(payload, { merge: true });
+        await db.collection("users").doc(currentUser.uid).set({ scheduleFixed: true, updatedAt: new Date() }, { merge: true });
+        return;
+      } catch (error) {
+        console.warn("Firebase schedule save failed, falling back to local storage.", error);
+      }
+    }
+
+    if (typeof upsertLocalClass === "function") {
+      upsertLocalClass(item.id, payload);
+    }
+  }
+
   if (form) {
-    form.addEventListener("submit", (event) => {
+    form.addEventListener("submit", async (event) => {
       event.preventDefault();
 
       const currentUser = getUser();
@@ -171,21 +199,9 @@
       });
 
       const saved = [...selectedNames.values()];
-      saved.forEach((item) => {
-        if (typeof upsertLocalClass === "function") {
-          upsertLocalClass(item.id, {
-            ownerUid: currentUser.uid,
-            name: item.name,
-            teacher: item.teacher || "",
-            room: item.room || "",
-            floor: Number(item.floor || 0),
-            day: item.day,
-            period: Number(item.period),
-            updatedAt: new Date(),
-            createdAt: item.createdAt || new Date(),
-          });
-        }
-      });
+      for (const item of saved) {
+        await persistScheduleEntry(item, currentUser);
+      }
 
       localStorage.setItem(`studyhub_schedule_fixed_${currentUser.uid}`, "true");
       alert("時間割を登録しました");
