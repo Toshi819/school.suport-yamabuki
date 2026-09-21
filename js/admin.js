@@ -1,11 +1,12 @@
 (function () {
   const { auth, db } = window.studyhubFirebase || {};
-  const { getCurrentUser, getUserProfile, isAdmin } = window.studyhubAuth || {};
+  const { getCurrentUser, getUserProfile, isAdmin, sendUserPasswordReset } = window.studyhubAuth || {};
   const form = document.getElementById("adminSubjectForm");
   const list = document.getElementById("adminSubjectList");
   const status = document.getElementById("adminStatus");
   const periodInput = document.getElementById("adminPeriod");
   const dayInput = document.getElementById("adminDay");
+  const accountList = document.getElementById("adminAccountList");
 
   for (let period = 1; period <= 12; period += 1) {
     periodInput.add(new Option(`${period}限`, String(period)));
@@ -55,6 +56,53 @@
     });
   }
 
+  async function loadAccounts() {
+    const snapshot = await db.collection("users").get();
+    const accounts = snapshot.docs
+      .map((item) => ({ id: item.id, ...item.data() }))
+      .sort((left, right) => String(left.userId || left.id).localeCompare(String(right.userId || right.id), "ja"));
+
+    accountList.innerHTML = "";
+    if (!accounts.length) {
+      accountList.textContent = "アカウントはまだありません。";
+      return;
+    }
+
+    accounts.forEach((account) => {
+      const row = document.createElement("div");
+      row.className = "account-row";
+      const fields = [
+        `${account.userId || "ID未設定"} / ${account.role || "student"}`,
+        account.username || "ユーザー名未設定",
+        account.email || "メール未設定",
+        account.provider || "不明",
+      ];
+      fields.forEach((value, index) => {
+        const element = document.createElement(index === 0 ? "strong" : "div");
+        element.className = index === 0 ? "" : "account-meta";
+        element.textContent = value;
+        row.appendChild(element);
+      });
+
+      const resetButton = document.createElement("button");
+      resetButton.type = "button";
+      resetButton.className = "reset-btn";
+      resetButton.textContent = "再設定メール";
+      resetButton.disabled = !account.email;
+      resetButton.addEventListener("click", async () => {
+        try {
+          await sendUserPasswordReset(account.email);
+          showStatus(`${account.email} に再設定メールを送信しました。`);
+        } catch (error) {
+          console.error(error);
+          showStatus("再設定メールの送信に失敗しました。");
+        }
+      });
+      row.appendChild(resetButton);
+      accountList.appendChild(row);
+    });
+  }
+
   async function boot() {
     const authenticatedUser = window.studyhubFirebase?.authReady
       ? await window.studyhubFirebase.authReady
@@ -71,6 +119,7 @@
       return;
     }
     await loadSubjects();
+    await loadAccounts();
   }
 
   form.addEventListener("submit", async (event) => {

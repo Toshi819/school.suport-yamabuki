@@ -10,12 +10,22 @@
   <body>
     <div class="app-shell">
       <header class="topbar">
-        <button class="menu-button" type="button" aria-label="メニューを開く">
+        <button id="menuButton" class="menu-button" type="button" aria-label="メニューを開く" aria-expanded="false" aria-controls="sideMenu">
           <span></span><span></span><span></span>
         </button>
         <div class="brand">StudyHub</div>
         <button id="logoutBtn" class="logout-btn" type="button">ログアウト</button>
       </header>
+
+      <aside id="sideMenu" class="side-menu" aria-hidden="true">
+        <div class="side-menu-head">
+          <strong>メニュー</strong>
+          <button id="closeMenuButton" type="button" aria-label="メニューを閉じる">×</button>
+        </div>
+        <a href="./verification.html">本人確認</a>
+        <a href="./admin.html">管理者画面</a>
+      </aside>
+      <div id="menuBackdrop" class="menu-backdrop" hidden></div>
 
       <main>
         <section class="schedule-card">
@@ -33,13 +43,13 @@
       </nav>
     </div>
 
-    <script type="module" src="./firebase.js?v=20260921-rules3"></script>
-    <script type="module" src="./auth.js?v=20260921-rules3"></script>
-    <script type="module" src="./js/auth/auth-guard.js?v=20260921-rules3"></script>
+    <script type="module" src="./firebase.js?v=20260921-verification2"></script>
+    <script type="module" src="./auth.js?v=20260921-verification2"></script>
+    <script type="module" src="./js/auth/auth-guard.js?v=20260921-verification2"></script>
     <script>
       window.addEventListener("load", () => {
         const script = document.createElement("script");
-        script.src = "./js/home.js?v=20260921-rules2";
+        script.src = "./js/home.js?v=20260921-verification2";
         document.body.appendChild(script);
       });
     </script>

@@ -52,7 +52,7 @@
       } catch (error) {
         sessionStorage.removeItem("studyhub_registration_in_progress");
         console.error(error);
-        alert("Googleアカウントでの登録に失敗しました。");
+        alert(error.message || "Googleアカウントでの登録に失敗しました。");
       }
     });
   }

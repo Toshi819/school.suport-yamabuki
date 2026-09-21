@@ -7,9 +7,24 @@
   const periods = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
   const timetableGrid = document.getElementById("timetableGrid");
   const logoutBtn = document.getElementById("logoutBtn");
+  const menuButton = document.getElementById("menuButton");
+  const closeMenuButton = document.getElementById("closeMenuButton");
+  const sideMenu = document.getElementById("sideMenu");
+  const menuBackdrop = document.getElementById("menuBackdrop");
 
   let currentUser = null;
   let timetableData = {};
+
+  function setMenuOpen(isOpen) {
+    sideMenu?.classList.toggle("open", isOpen);
+    sideMenu?.setAttribute("aria-hidden", String(!isOpen));
+    menuButton?.setAttribute("aria-expanded", String(isOpen));
+    if (menuBackdrop) menuBackdrop.hidden = !isOpen;
+  }
+
+  menuButton?.addEventListener("click", () => setMenuOpen(true));
+  closeMenuButton?.addEventListener("click", () => setMenuOpen(false));
+  menuBackdrop?.addEventListener("click", () => setMenuOpen(false));
 
   function buildEmptyTimetable() {
     const grid = {};

@@ -38,7 +38,7 @@
         redirectAfterLogin(result?.user || result?.profile || window.studyhubAuth?.getCurrentUser?.());
       } catch (error) {
         console.error(error);
-        alert("Googleログインに失敗しました。");
+        alert(error.message || "Googleログインに失敗しました。");
       }
     });
   }

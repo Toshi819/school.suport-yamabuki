@@ -150,6 +150,7 @@
             email: user.email || extra.email || "",
             role: "student",
             provider: user.providerData?.[0]?.providerId || extra.provider || "password",
+            verificationStatus: "unverified",
             createdAt: new Date(),
             lastLogin: new Date(),
             ...getProfileFields(extra),
@@ -277,12 +278,24 @@
   async function loginWithGoogle() {
     if (useRemoteBackend && auth && typeof auth.signInWithPopup === "function") {
       const provider = new window.studyhubFirebase.GoogleAuthProvider();
-      const userCredential = await auth.signInWithPopup(provider);
-      const profile = await ensureUserProfile(userCredential.user, {
-        provider: "google.com",
-      });
-      setCurrentUser({ ...userCredential.user, ...profile });
-      return { user: userCredential.user, profile };
+      try {
+        const userCredential = await auth.signInWithPopup(provider);
+        const profile = await ensureUserProfile(userCredential.user, {
+          provider: "google.com",
+        });
+        setCurrentUser({ ...userCredential.user, ...profile });
+        return { user: userCredential.user, profile };
+      } catch (error) {
+        if (["auth/popup-blocked", "auth/popup-closed-by-user", "auth/operation-not-supported-in-this-environment"].includes(error.code)
+          && typeof auth.signInWithRedirect === "function") {
+          await auth.signInWithRedirect(provider);
+          return null;
+        }
+        if (error.code === "auth/operation-not-allowed") {
+          throw new Error("FirebaseコンソールでGoogleログインを有効にしてください");
+        }
+        throw error;
+      }
     }
 
     const uid = `google_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -320,6 +333,13 @@
 
   function isAdmin(profile) {
     return profile?.role === "admin";
+  }
+
+  async function sendUserPasswordReset(email) {
+    if (!useRemoteBackend || !auth?.sendPasswordResetEmail) {
+      throw new Error("Firebase Authenticationが利用できません");
+    }
+    return auth.sendPasswordResetEmail(email);
   }
 
   async function importSubjectsFromCsv(rows = []) {
@@ -374,6 +394,7 @@
     ensureUserProfile,
     getUserProfile,
     isAdmin,
+    sendUserPasswordReset,
     registerWithEmail,
     loginWithEmail,
     loginWithGoogle,
@@ -386,4 +407,13 @@
     deleteLocalClass,
     upsertLocalSubject,
   };
+
+  if (window.studyhubFirebase?.authReady) {
+    window.studyhubFirebase.authReady.then((user) => {
+      if (user) {
+        ensureUserProfile(user, { provider: user.providerData?.[0]?.providerId || "password" })
+          .catch((error) => console.warn("Firebase profile sync after auth redirect failed:", error));
+      }
+    });
+  }
 })();

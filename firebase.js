@@ -4,8 +4,10 @@ import {
   createUserWithEmailAndPassword,
   getAuth,
   onAuthStateChanged,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
   signOut,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
@@ -89,6 +91,8 @@ import {
       createUserWithEmailAndPassword: (email, password) => createUserWithEmailAndPassword(authInstance, email, password),
       signInWithEmailAndPassword: (email, password) => signInWithEmailAndPassword(authInstance, email, password),
       signInWithPopup: (provider) => signInWithPopup(authInstance, provider),
+      signInWithRedirect: (provider) => signInWithRedirect(authInstance, provider),
+      sendPasswordResetEmail: (email) => sendPasswordResetEmail(authInstance, email),
       onAuthStateChanged: (callback) => onAuthStateChanged(authInstance, callback),
       signOut: () => signOut(authInstance),
     };
