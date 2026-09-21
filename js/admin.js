@@ -30,6 +30,9 @@
     const isFourPeriod = fourPeriodInput.checked;
     secondDayField.hidden = !isFourPeriod;
     document.getElementById("adminDoublePeriod").disabled = isFourPeriod;
+    if (!isFourPeriod) {
+      secondDayInput.value = "月";
+    }
   }
 
   fourPeriodInput.addEventListener("change", updateFourPeriodFields);
