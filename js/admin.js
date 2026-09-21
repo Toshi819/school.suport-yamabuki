@@ -6,6 +6,9 @@
   const status = document.getElementById("adminStatus");
   const periodInput = document.getElementById("adminPeriod");
   const dayInput = document.getElementById("adminDay");
+  const secondDayField = document.getElementById("adminSecondDayField");
+  const secondDayInput = document.getElementById("adminSecondDay");
+  const fourPeriodInput = document.getElementById("adminFourPeriod");
   const accountList = document.getElementById("adminAccountList");
   const logoutButton = document.getElementById("adminLogoutBtn");
 
@@ -22,6 +25,15 @@
   for (let period = 1; period <= 12; period += 1) {
     periodInput.add(new Option(`${period}限`, String(period)));
   }
+
+  function updateFourPeriodFields() {
+    const isFourPeriod = fourPeriodInput.checked;
+    secondDayField.hidden = !isFourPeriod;
+    document.getElementById("adminDoublePeriod").disabled = isFourPeriod;
+  }
+
+  fourPeriodInput.addEventListener("change", updateFourPeriodFields);
+  updateFourPeriodFields();
 
   function showStatus(message) {
     if (status) status.textContent = message;
@@ -51,7 +63,9 @@
       const row = document.createElement("div");
       row.className = "subject-row";
       const details = document.createElement("div");
-      details.innerHTML = `<strong>${subject.name}</strong><div class="subject-meta">${subject.category || "その他"} / ${subject.day} ${subject.period}限${subject.isDoublePeriod ? "（2コマ）" : ""} / ${subject.teacher} / ${subject.room}</div>`;
+      const days = subject.isFourPeriod ? `${subject.day}・${subject.secondDay}` : subject.day;
+      const span = subject.isFourPeriod ? "（4コマ）" : (subject.isDoublePeriod ? "（2コマ）" : "");
+      details.innerHTML = `<strong>${subject.name}</strong><div class="subject-meta">${subject.category || "その他"} / ${days} ${subject.period}限${span} / ${subject.teacher} / ${subject.room}</div>`;
       const deleteButton = document.createElement("button");
       deleteButton.className = "delete-btn";
       deleteButton.type = "button";
@@ -143,6 +157,13 @@
     const period = Number(periodInput.value);
     const category = document.getElementById("adminCategory").value;
     const isDoublePeriod = document.getElementById("adminDoublePeriod").checked;
+    const isFourPeriod = fourPeriodInput.checked;
+    const secondDay = secondDayInput.value;
+
+    if (isFourPeriod && day === secondDay) {
+      showStatus("4コマ授業の曜日は別々に選択してください。");
+      return;
+    }
 
     try {
       await db.collection("subjects").doc(subjectId(name, day, period)).set({
@@ -154,6 +175,8 @@
         period,
         category,
         isDoublePeriod,
+        isFourPeriod,
+        secondDay: isFourPeriod ? secondDay : "",
         updatedAt: new Date(),
       }, { merge: true });
       form.reset();

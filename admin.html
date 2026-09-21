@@ -45,9 +45,11 @@
           <label>教室<input id="adminRoom" required maxlength="40" /></label>
           <label>階数<input id="adminFloor" type="number" min="1" max="20" value="1" required /></label>
           <label>曜日<select id="adminDay"><option>月</option><option>火</option><option>水</option><option>木</option><option>金</option></select></label>
+          <label id="adminSecondDayField" hidden>2つ目の曜日<select id="adminSecondDay"><option>月</option><option>火</option><option>水</option><option>木</option><option>金</option></select></label>
           <label>時限<select id="adminPeriod"></select></label>
           <label>授業の種類<select id="adminCategory"><option>数学</option><option>国語</option><option>科学</option><option>社会</option><option>英語</option><option>情報</option><option>その他</option></select></label>
-          <label class="full"><span><input id="adminDoublePeriod" type="checkbox" /> 2コマ授業</span></label>
+          <label><span><input id="adminDoublePeriod" type="checkbox" /> 2コマ授業</span></label>
+          <label><span><input id="adminFourPeriod" type="checkbox" /> 4コマ授業</span></label>
           <div class="full"><button class="primary-btn" type="submit">授業マスタに追加</button></div>
         </form>
         <p id="adminStatus" class="note" aria-live="polite"></p>
@@ -62,9 +64,9 @@
         </div>
       </section>
     </main>
-    <script type="module" src="./firebase.js?v=20260921-category1"></script>
-    <script type="module" src="./auth.js?v=20260921-category1"></script>
-    <script type="module" src="./js/auth/auth-guard.js?v=20260921-category1"></script>
-    <script type="module" src="./js/admin.js?v=20260921-category1"></script>
+    <script type="module" src="./firebase.js?v=20260921-four-period2"></script>
+    <script type="module" src="./auth.js?v=20260921-four-period2"></script>
+    <script type="module" src="./js/auth/auth-guard.js?v=20260921-four-period2"></script>
+    <script type="module" src="./js/admin.js?v=20260921-four-period2"></script>
   </body>
 </html>

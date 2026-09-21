@@ -27,10 +27,16 @@
     return numericPeriod % 2 === 1 ? numericPeriod + 1 : numericPeriod - 1;
   }
 
-  function isAvailableAt(subject, period) {
-    const numericPeriod = Number(period);
-    return Number(subject.period) === numericPeriod
-      || (subject.isDoublePeriod && getPairedPeriod(subject.period) === numericPeriod);
+  function getSubjectSlots(subject) {
+    const subjectDays = subject.isFourPeriod ? [subject.day, subject.secondDay] : [subject.day];
+    const subjectPeriods = subject.isFourPeriod || subject.isDoublePeriod
+      ? [Number(subject.period), getPairedPeriod(subject.period)]
+      : [Number(subject.period)];
+    return subjectDays.flatMap((day) => subjectPeriods.map((period) => ({ day, period })));
+  }
+
+  function isAvailableAt(subject, day, period) {
+    return getSubjectSlots(subject).some((slot) => slot.day === day && slot.period === Number(period));
   }
 
   function matchesCategory(subject) {
@@ -40,24 +46,28 @@
   function selectSubjectAtSlot(day, period, subjectId, previousSubjectId = "") {
     const select = getSelect(day, period);
     const previousSubject = subjectCatalog.find((item) => item.id === previousSubjectId);
-    if (previousSubject?.isDoublePeriod) {
-      const previousPairedSelect = getSelect(day, getPairedPeriod(period));
-      if (previousPairedSelect?.value === previousSubject.id) {
-        previousPairedSelect.value = "";
-        previousPairedSelect.dataset.previousValue = "";
-      }
+    if (previousSubject) {
+      getSubjectSlots(previousSubject).forEach((slot) => {
+        const previousSlot = getSelect(slot.day, slot.period);
+        if (previousSlot?.value === previousSubject.id) {
+          previousSlot.value = "";
+          previousSlot.dataset.previousValue = "";
+        }
+      });
     }
     if (select) {
       select.value = subjectId;
       select.dataset.previousValue = subjectId;
     }
     const subject = subjectCatalog.find((item) => item.id === subjectId);
-    if (subject?.isDoublePeriod) {
-      const pairedSelect = getSelect(day, getPairedPeriod(period));
-      if (pairedSelect) {
-        pairedSelect.value = subjectId;
-        pairedSelect.dataset.previousValue = subjectId;
-      }
+    if (subject) {
+      getSubjectSlots(subject).forEach((slot) => {
+        const pairedSelect = getSelect(slot.day, slot.period);
+        if (pairedSelect) {
+          pairedSelect.value = subjectId;
+          pairedSelect.dataset.previousValue = subjectId;
+        }
+      });
     }
   }
 
@@ -83,7 +93,7 @@
         select.setAttribute("aria-label", `${day}${period}限`);
         select.add(new Option("未設定", ""));
         subjectCatalog
-          .filter((subject) => subject.day === day && isAvailableAt(subject, period)
+          .filter((subject) => isAvailableAt(subject, day, period)
             && (matchesCategory(subject) || subject.id === selectedValues[`${day}_${period}`]))
           .forEach((subject) => select.add(new Option(`${subject.name}（${subject.teacher}）`, subject.id)));
         select.value = selectedValues[`${day}_${period}`] || "";
@@ -150,7 +160,7 @@
 
   function openMobilePicker(day, period) {
     activeMobileSlot = { day, period };
-    const choices = subjectCatalog.filter((subject) => subject.day === day && isAvailableAt(subject, period) && matchesCategory(subject));
+    const choices = subjectCatalog.filter((subject) => isAvailableAt(subject, day, period) && matchesCategory(subject));
     mobilePickerTitle.textContent = `${day}${period}限の授業を選択`;
     mobilePickerOptions.innerHTML = "";
     choices.forEach((subject) => {
@@ -225,16 +235,15 @@
         .where("ownerUid", "==", currentUser.uid)
         .get();
       const selectedClassIds = new Set();
+      const processedSubjects = new Set();
 
       for (const day of dayNames) {
         for (const period of periods) {
           const select = form.elements.namedItem(`${day}_${period}`);
           const subject = subjectCatalog.find((item) => item.id === select?.value);
-          if (subject) {
-            const slots = subject.isDoublePeriod
-              ? [Number(subject.period), getPairedPeriod(subject.period)]
-              : [period];
-            for (const slot of slots) {
+          if (subject && !processedSubjects.has(subject.id)) {
+            processedSubjects.add(subject.id);
+            for (const slot of getSubjectSlots(subject)) {
               selectedClassIds.add(`${currentUser.uid}_${day}_${slot}`);
               await persistScheduleEntry(subject, currentUser, day, slot);
             }
