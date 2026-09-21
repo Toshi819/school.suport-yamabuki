@@ -11,6 +11,11 @@
   const fourPeriodInput = document.getElementById("adminFourPeriod");
   const accountList = document.getElementById("adminAccountList");
   const logoutButton = document.getElementById("adminLogoutBtn");
+  const filterCategory = document.getElementById("subjectFilterCategory");
+  const filterDay = document.getElementById("subjectFilterDay");
+  const filterPeriod = document.getElementById("subjectFilterPeriod");
+  const filterSpan = document.getElementById("subjectFilterSpan");
+  let allSubjects = [];
   let editingSubjectId = "";
 
   logoutButton?.addEventListener("click", async () => {
@@ -25,6 +30,7 @@
 
   for (let period = 1; period <= 12; period += 1) {
     periodInput.add(new Option(`${period}限`, String(period)));
+    filterPeriod.add(new Option(`${period}限`, String(period)));
   }
 
   function updateFourPeriodFields() {
@@ -57,9 +63,23 @@
 
   async function loadSubjects() {
     const snapshot = await db.collection("subjects").get();
-    const subjects = snapshot.docs
+    allSubjects = snapshot.docs
       .map((item) => ({ id: item.id, ...item.data() }))
       .sort((left, right) => `${left.day}${left.period}${left.name}`.localeCompare(`${right.day}${right.period}${right.name}`, "ja"));
+
+    renderSubjects();
+  }
+
+  function matchesSubjectFilter(subject) {
+    const subjectSpan = subject.isFourPeriod ? "four" : (subject.isDoublePeriod ? "double" : "single");
+    return (filterCategory.value === "all" || (subject.category || "その他") === filterCategory.value)
+      && (filterDay.value === "all" || subject.day === filterDay.value || (subject.isFourPeriod && subject.secondDay === filterDay.value))
+      && (filterPeriod.value === "all" || Number(subject.period) === Number(filterPeriod.value))
+      && (filterSpan.value === "all" || subjectSpan === filterSpan.value);
+  }
+
+  function renderSubjects() {
+    const subjects = allSubjects.filter(matchesSubjectFilter);
 
     list.innerHTML = "";
     if (!subjects.length) {
@@ -112,6 +132,10 @@
       list.appendChild(row);
     });
   }
+
+  [filterCategory, filterDay, filterPeriod, filterSpan].forEach((filter) => {
+    filter.addEventListener("change", renderSubjects);
+  });
 
   async function loadAccounts() {
     const snapshot = await db.collection("users").get();
