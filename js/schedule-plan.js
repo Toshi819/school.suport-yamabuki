@@ -20,6 +20,27 @@
     return auth?.currentUser || getCurrentUser?.();
   }
 
+  function getPairedPeriod(period) {
+    const numericPeriod = Number(period);
+    return numericPeriod % 2 === 1 ? numericPeriod + 1 : numericPeriod - 1;
+  }
+
+  function isAvailableAt(subject, period) {
+    const numericPeriod = Number(period);
+    return Number(subject.period) === numericPeriod
+      || (subject.isDoublePeriod && getPairedPeriod(subject.period) === numericPeriod);
+  }
+
+  function selectSubjectAtSlot(day, period, subjectId) {
+    const select = getSelect(day, period);
+    if (select) select.value = subjectId;
+    const subject = subjectCatalog.find((item) => item.id === subjectId);
+    if (subject?.isDoublePeriod) {
+      const pairedSelect = getSelect(day, getPairedPeriod(period));
+      if (pairedSelect) pairedSelect.value = subjectId;
+    }
+  }
+
   function renderGrid() {
     grid.innerHTML = "";
     grid.appendChild(Object.assign(document.createElement("div"), { className: "cell head" }));
@@ -35,8 +56,12 @@
         select.setAttribute("aria-label", `${day}${period}限`);
         select.add(new Option("未設定", ""));
         subjectCatalog
-          .filter((subject) => subject.day === day && Number(subject.period) === period)
+          .filter((subject) => subject.day === day && isAvailableAt(subject, period))
           .forEach((subject) => select.add(new Option(`${subject.name}（${subject.teacher}）`, subject.id)));
+        select.addEventListener("change", () => {
+          if (select.value) selectSubjectAtSlot(day, period, select.value);
+          renderMobileGrid();
+        });
         wrapper.appendChild(select);
         grid.appendChild(wrapper);
       });
@@ -93,7 +118,7 @@
 
   function openMobilePicker(day, period) {
     activeMobileSlot = { day, period };
-    const choices = subjectCatalog.filter((subject) => subject.day === day && Number(subject.period) === period);
+    const choices = subjectCatalog.filter((subject) => subject.day === day && isAvailableAt(subject, period));
     mobilePickerTitle.textContent = `${day}${period}限の授業を選択`;
     mobilePickerOptions.innerHTML = "";
     choices.forEach((subject) => {
@@ -101,7 +126,7 @@
       button.type = "button";
       button.textContent = `${subject.name}（${subject.teacher} / ${subject.room}）`;
       button.addEventListener("click", () => {
-        getSelect(day, period).value = subject.id;
+        selectSubjectAtSlot(day, period, subject.id);
         closeMobilePicker();
         renderMobileGrid();
       });
@@ -116,7 +141,12 @@
 
   mobilePickerClear?.addEventListener("click", () => {
     if (activeMobileSlot) {
-      getSelect(activeMobileSlot.day, activeMobileSlot.period).value = "";
+      const currentSelect = getSelect(activeMobileSlot.day, activeMobileSlot.period);
+      const currentSubject = subjectCatalog.find((subject) => subject.id === currentSelect?.value);
+      currentSelect.value = "";
+      if (currentSubject?.isDoublePeriod) {
+        getSelect(activeMobileSlot.day, getPairedPeriod(activeMobileSlot.period)).value = "";
+      }
       closeMobilePicker();
       renderMobileGrid();
     }
@@ -167,8 +197,13 @@
           const select = form.elements.namedItem(`${day}_${period}`);
           const subject = subjectCatalog.find((item) => item.id === select?.value);
           if (subject) {
-            selectedClassIds.add(`${currentUser.uid}_${day}_${period}`);
-            await persistScheduleEntry(subject, currentUser, day, period);
+            const slots = subject.isDoublePeriod
+              ? [Number(subject.period), getPairedPeriod(subject.period)]
+              : [period];
+            for (const slot of slots) {
+              selectedClassIds.add(`${currentUser.uid}_${day}_${slot}`);
+              await persistScheduleEntry(subject, currentUser, day, slot);
+            }
           }
         }
       }

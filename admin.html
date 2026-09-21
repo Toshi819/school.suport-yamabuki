@@ -46,6 +46,7 @@
           <label>階数<input id="adminFloor" type="number" min="1" max="20" value="1" required /></label>
           <label>曜日<select id="adminDay"><option>月</option><option>火</option><option>水</option><option>木</option><option>金</option></select></label>
           <label>時限<select id="adminPeriod"></select></label>
+          <label class="full"><span><input id="adminDoublePeriod" type="checkbox" /> 2コマ授業</span></label>
           <div class="full"><button class="primary-btn" type="submit">授業マスタに追加</button></div>
         </form>
         <p id="adminStatus" class="note" aria-live="polite"></p>
@@ -60,9 +61,9 @@
         </div>
       </section>
     </main>
-    <script type="module" src="./firebase.js?v=20260921-schedulefix3"></script>
-    <script type="module" src="./auth.js?v=20260921-schedulefix3"></script>
-    <script type="module" src="./js/auth/auth-guard.js?v=20260921-schedulefix3"></script>
-    <script type="module" src="./js/admin.js?v=20260921-schedulefix3"></script>
+    <script type="module" src="./firebase.js?v=20260921-double-period1"></script>
+    <script type="module" src="./auth.js?v=20260921-double-period1"></script>
+    <script type="module" src="./js/auth/auth-guard.js?v=20260921-double-period1"></script>
+    <script type="module" src="./js/admin.js?v=20260921-double-period1"></script>
   </body>
 </html>
