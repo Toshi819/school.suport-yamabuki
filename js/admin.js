@@ -1,12 +1,23 @@
 (function () {
   const { auth, db } = window.studyhubFirebase || {};
-  const { getCurrentUser, getUserProfile, isAdmin, sendUserPasswordReset } = window.studyhubAuth || {};
+  const { getCurrentUser, getUserProfile, isAdmin, sendUserPasswordReset, logoutUser } = window.studyhubAuth || {};
   const form = document.getElementById("adminSubjectForm");
   const list = document.getElementById("adminSubjectList");
   const status = document.getElementById("adminStatus");
   const periodInput = document.getElementById("adminPeriod");
   const dayInput = document.getElementById("adminDay");
   const accountList = document.getElementById("adminAccountList");
+  const logoutButton = document.getElementById("adminLogoutBtn");
+
+  logoutButton?.addEventListener("click", async () => {
+    try {
+      await logoutUser();
+      window.location.replace("./index.html");
+    } catch (error) {
+      console.error(error);
+      showStatus("ログアウトに失敗しました。");
+    }
+  });
 
   for (let period = 1; period <= 12; period += 1) {
     periodInput.add(new Option(`${period}限`, String(period)));
