@@ -10,6 +10,7 @@
   const secondDayInput = document.getElementById("adminSecondDay");
   const fourPeriodInput = document.getElementById("adminFourPeriod");
   const accountList = document.getElementById("adminAccountList");
+  const reportList = document.getElementById("adminReportList");
   const logoutButton = document.getElementById("adminLogoutBtn");
   const filterCategory = document.getElementById("subjectFilterCategory");
   const filterDay = document.getElementById("subjectFilterDay");
@@ -187,6 +188,32 @@
     });
   }
 
+  async function loadReports() {
+    const snapshot = await db.collection("reports").get();
+    const reports = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }))
+      .sort((left, right) => Number(right.createdAt?.seconds || 0) - Number(left.createdAt?.seconds || 0));
+    reportList.innerHTML = "";
+    if (!reports.length) {
+      reportList.textContent = "問題報告はありません。";
+      return;
+    }
+    reports.forEach((report) => {
+      const row = document.createElement("div");
+      row.className = "subject-row";
+      const details = document.createElement("div");
+      details.innerHTML = `<strong>${report.title || "件名なし"}</strong><div class="subject-meta">${report.category || "その他"} / ${report.reporterEmail || report.ownerUid || "ユーザー不明"}<br>${report.message || ""}</div>`;
+      const state = document.createElement("select");
+      ["未対応", "対応中", "解決済み"].forEach((value) => state.add(new Option(value, value)));
+      state.value = report.status || "未対応";
+      state.addEventListener("change", async () => {
+        await db.collection("reports").doc(report.id).set({ status: state.value, updatedAt: new Date() }, { merge: true });
+        showStatus("問題報告の状態を更新しました。");
+      });
+      row.append(details, state);
+      reportList.appendChild(row);
+    });
+  }
+
   async function boot() {
     const authenticatedUser = window.studyhubFirebase?.authReady
       ? await window.studyhubFirebase.authReady
@@ -204,6 +231,7 @@
     }
     await loadSubjects();
     await loadAccounts();
+    await loadReports();
   }
 
   form.addEventListener("submit", async (event) => {
