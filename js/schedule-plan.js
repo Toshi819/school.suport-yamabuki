@@ -75,7 +75,10 @@
           if (subject) {
             await persistScheduleEntry(subject, currentUser, day, period);
           } else {
-            await classRef.delete();
+            const existingClass = await classRef.get();
+            if (existingClass.exists) {
+              await classRef.delete();
+            }
           }
         }
       }
