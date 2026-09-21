@@ -129,6 +129,19 @@
         font-size: 0.92rem;
       }
 
+      .category-filter-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 14px 0;
+        color: var(--navy);
+        font-weight: 700;
+      }
+
+      .category-filter-row select {
+        max-width: 180px;
+      }
+
       @media (max-width: 620px) {
         .shell {
           padding: 12px 8px 24px;
@@ -284,6 +297,20 @@
 
         <div id="status" class="note">曜日と時限に合う授業を選んで登録します。</div>
 
+        <div class="category-filter-row">
+          <label for="categoryFilter">授業の種類</label>
+          <select id="categoryFilter">
+            <option value="all">すべて</option>
+            <option value="数学">数学</option>
+            <option value="国語">国語</option>
+            <option value="科学">科学</option>
+            <option value="社会">社会</option>
+            <option value="英語">英語</option>
+            <option value="情報">情報</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+
         <form id="scheduleForm">
           <div class="grid-wrap">
             <div id="scheduleGrid" class="schedule-grid"></div>
@@ -307,9 +334,9 @@
       </div>
     </div>
 
-    <script type="module" src="./firebase.js?v=20260921-double-period1"></script>
-    <script type="module" src="./auth.js?v=20260921-double-period1"></script>
-    <script type="module" src="./js/auth/auth-guard.js?v=20260921-double-period1"></script>
-    <script type="module" src="./js/schedule-plan.js?v=20260921-double-period1"></script>
+    <script type="module" src="./firebase.js?v=20260921-category1"></script>
+    <script type="module" src="./auth.js?v=20260921-category1"></script>
+    <script type="module" src="./js/auth/auth-guard.js?v=20260921-category1"></script>
+    <script type="module" src="./js/schedule-plan.js?v=20260921-category1"></script>
   </body>
 </html>

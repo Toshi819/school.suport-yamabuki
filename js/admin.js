@@ -51,7 +51,7 @@
       const row = document.createElement("div");
       row.className = "subject-row";
       const details = document.createElement("div");
-      details.innerHTML = `<strong>${subject.name}</strong><div class="subject-meta">${subject.day} ${subject.period}限${subject.isDoublePeriod ? "（2コマ）" : ""} / ${subject.teacher} / ${subject.room}</div>`;
+      details.innerHTML = `<strong>${subject.name}</strong><div class="subject-meta">${subject.category || "その他"} / ${subject.day} ${subject.period}限${subject.isDoublePeriod ? "（2コマ）" : ""} / ${subject.teacher} / ${subject.room}</div>`;
       const deleteButton = document.createElement("button");
       deleteButton.className = "delete-btn";
       deleteButton.type = "button";
@@ -141,6 +141,7 @@
     const floor = Number(document.getElementById("adminFloor").value || 0);
     const day = dayInput.value;
     const period = Number(periodInput.value);
+    const category = document.getElementById("adminCategory").value;
     const isDoublePeriod = document.getElementById("adminDoublePeriod").checked;
 
     try {
@@ -151,6 +152,7 @@
         floor,
         day,
         period,
+        category,
         isDoublePeriod,
         updatedAt: new Date(),
       }, { merge: true });

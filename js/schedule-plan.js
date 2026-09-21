@@ -5,6 +5,7 @@
   const mobileGrid = document.getElementById("mobileScheduleGrid");
   const form = document.getElementById("scheduleForm");
   const status = document.getElementById("status");
+  const categoryFilter = document.getElementById("categoryFilter");
   const mobilePickerBackdrop = document.getElementById("mobilePickerBackdrop");
   const mobilePickerTitle = document.getElementById("mobilePickerTitle");
   const mobilePickerOptions = document.getElementById("mobilePickerOptions");
@@ -15,6 +16,7 @@
   const getCurrentUser = window.studyhubAuth?.getCurrentUser;
   let subjectCatalog = [];
   let activeMobileSlot = null;
+  let selectedCategory = "all";
 
   function getUser() {
     return auth?.currentUser || getCurrentUser?.();
@@ -31,17 +33,42 @@
       || (subject.isDoublePeriod && getPairedPeriod(subject.period) === numericPeriod);
   }
 
-  function selectSubjectAtSlot(day, period, subjectId) {
+  function matchesCategory(subject) {
+    return selectedCategory === "all" || (subject.category || "その他") === selectedCategory;
+  }
+
+  function selectSubjectAtSlot(day, period, subjectId, previousSubjectId = "") {
     const select = getSelect(day, period);
-    if (select) select.value = subjectId;
+    const previousSubject = subjectCatalog.find((item) => item.id === previousSubjectId);
+    if (previousSubject?.isDoublePeriod) {
+      const previousPairedSelect = getSelect(day, getPairedPeriod(period));
+      if (previousPairedSelect?.value === previousSubject.id) {
+        previousPairedSelect.value = "";
+        previousPairedSelect.dataset.previousValue = "";
+      }
+    }
+    if (select) {
+      select.value = subjectId;
+      select.dataset.previousValue = subjectId;
+    }
     const subject = subjectCatalog.find((item) => item.id === subjectId);
     if (subject?.isDoublePeriod) {
       const pairedSelect = getSelect(day, getPairedPeriod(period));
-      if (pairedSelect) pairedSelect.value = subjectId;
+      if (pairedSelect) {
+        pairedSelect.value = subjectId;
+        pairedSelect.dataset.previousValue = subjectId;
+      }
     }
   }
 
   function renderGrid() {
+    const selectedValues = {};
+    if (form) {
+      dayNames.forEach((day) => periods.forEach((period) => {
+        const existingSelect = form.elements.namedItem(`${day}_${period}`);
+        if (existingSelect?.value) selectedValues[`${day}_${period}`] = existingSelect.value;
+      }));
+    }
     grid.innerHTML = "";
     grid.appendChild(Object.assign(document.createElement("div"), { className: "cell head" }));
     dayNames.forEach((day) => grid.appendChild(Object.assign(document.createElement("div"), { className: "cell head", textContent: day })));
@@ -56,10 +83,15 @@
         select.setAttribute("aria-label", `${day}${period}限`);
         select.add(new Option("未設定", ""));
         subjectCatalog
-          .filter((subject) => subject.day === day && isAvailableAt(subject, period))
+          .filter((subject) => subject.day === day && isAvailableAt(subject, period)
+            && (matchesCategory(subject) || subject.id === selectedValues[`${day}_${period}`]))
           .forEach((subject) => select.add(new Option(`${subject.name}（${subject.teacher}）`, subject.id)));
+        select.value = selectedValues[`${day}_${period}`] || "";
+        select.dataset.previousValue = select.value;
         select.addEventListener("change", () => {
-          if (select.value) selectSubjectAtSlot(day, period, select.value);
+          const previousSubjectId = select.dataset.previousValue || "";
+          selectSubjectAtSlot(day, period, select.value, previousSubjectId);
+          select.dataset.previousValue = select.value;
           renderMobileGrid();
         });
         wrapper.appendChild(select);
@@ -118,7 +150,7 @@
 
   function openMobilePicker(day, period) {
     activeMobileSlot = { day, period };
-    const choices = subjectCatalog.filter((subject) => subject.day === day && isAvailableAt(subject, period));
+    const choices = subjectCatalog.filter((subject) => subject.day === day && isAvailableAt(subject, period) && matchesCategory(subject));
     mobilePickerTitle.textContent = `${day}${period}限の授業を選択`;
     mobilePickerOptions.innerHTML = "";
     choices.forEach((subject) => {
@@ -143,10 +175,7 @@
     if (activeMobileSlot) {
       const currentSelect = getSelect(activeMobileSlot.day, activeMobileSlot.period);
       const currentSubject = subjectCatalog.find((subject) => subject.id === currentSelect?.value);
-      currentSelect.value = "";
-      if (currentSubject?.isDoublePeriod) {
-        getSelect(activeMobileSlot.day, getPairedPeriod(activeMobileSlot.period)).value = "";
-      }
+      selectSubjectAtSlot(activeMobileSlot.day, activeMobileSlot.period, "", currentSubject?.id || "");
       closeMobilePicker();
       renderMobileGrid();
     }
@@ -154,6 +183,11 @@
   mobilePickerClose?.addEventListener("click", closeMobilePicker);
   mobilePickerBackdrop?.addEventListener("click", (event) => {
     if (event.target === mobilePickerBackdrop) closeMobilePicker();
+  });
+
+  categoryFilter?.addEventListener("change", () => {
+    selectedCategory = categoryFilter.value || "all";
+    renderGrid();
   });
 
   async function loadSubjectCatalog() {
