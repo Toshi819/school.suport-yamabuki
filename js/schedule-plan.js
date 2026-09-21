@@ -17,6 +17,7 @@
   let subjectCatalog = [];
   let activeMobileSlot = null;
   let selectedCategory = "all";
+  let savedClassSubjects = {};
 
   function getUser() {
     return auth?.currentUser || getCurrentUser?.();
@@ -77,6 +78,7 @@
       dayNames.forEach((day) => periods.forEach((period) => {
         const existingSelect = form.elements.namedItem(`${day}_${period}`);
         if (existingSelect?.value) selectedValues[`${day}_${period}`] = existingSelect.value;
+        else if (savedClassSubjects[`${day}_${period}`]) selectedValues[`${day}_${period}`] = savedClassSubjects[`${day}_${period}`];
       }));
     }
     grid.innerHTML = "";
@@ -203,6 +205,17 @@
   async function loadSubjectCatalog() {
     const snapshot = await db.collection("subjects").get();
     subjectCatalog = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+    const currentUser = getUser();
+    if (currentUser) {
+      const classesSnapshot = await db.collection("classes").where("ownerUid", "==", currentUser.uid).get();
+      savedClassSubjects = {};
+      classesSnapshot.forEach((item) => {
+        const data = item.data();
+        if (data.day && data.period && data.subjectId) {
+          savedClassSubjects[`${data.day}_${Number(data.period)}`] = data.subjectId;
+        }
+      });
+    }
     renderGrid();
     if (status) status.textContent = subjectCatalog.length ? "曜日と時限に合う授業を選んで登録します。" : "管理者が授業マスタを登録するまで選択できる授業はありません。";
   }
@@ -244,8 +257,8 @@
           if (subject && !processedSubjects.has(subject.id)) {
             processedSubjects.add(subject.id);
             for (const slot of getSubjectSlots(subject)) {
-              selectedClassIds.add(`${currentUser.uid}_${day}_${slot}`);
-              await persistScheduleEntry(subject, currentUser, day, slot);
+              selectedClassIds.add(`${currentUser.uid}_${slot.day}_${slot.period}`);
+              await persistScheduleEntry(subject, currentUser, slot.day, slot.period);
             }
           }
         }
