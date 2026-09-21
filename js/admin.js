@@ -72,9 +72,12 @@
 
   function matchesSubjectFilter(subject) {
     const subjectSpan = subject.isFourPeriod ? "four" : (subject.isDoublePeriod ? "double" : "single");
+    const subjectPeriods = subject.isFourPeriod || subject.isDoublePeriod
+      ? [Number(subject.period), Number(subject.period) % 2 === 1 ? Number(subject.period) + 1 : Number(subject.period) - 1]
+      : [Number(subject.period)];
     return (filterCategory.value === "all" || (subject.category || "その他") === filterCategory.value)
       && (filterDay.value === "all" || subject.day === filterDay.value || (subject.isFourPeriod && subject.secondDay === filterDay.value))
-      && (filterPeriod.value === "all" || Number(subject.period) === Number(filterPeriod.value))
+      && (filterPeriod.value === "all" || subjectPeriods.includes(Number(filterPeriod.value)))
       && (filterSpan.value === "all" || subjectSpan === filterSpan.value);
   }
 
