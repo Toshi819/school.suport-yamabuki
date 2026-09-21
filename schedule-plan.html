@@ -142,69 +142,7 @@
           <a href="./home.html" class="secondary-btn" style="display: inline-flex; align-items: center; justify-content: center;">ホームへ戻る</a>
         </div>
 
-        <div class="add-subject-panel">
-          <div class="field">
-            <label for="subjectName">授業名</label>
-            <select id="subjectName">
-              <option value="国語">国語</option>
-              <option value="数学">数学</option>
-              <option value="英語">英語</option>
-              <option value="理科">理科</option>
-              <option value="社会">社会</option>
-              <option value="情報">情報</option>
-              <option value="保健体育">保健体育</option>
-              <option value="美術">美術</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="teacherInput">先生</label>
-            <select id="teacherInput">
-              <option value="田中先生">田中先生</option>
-              <option value="佐藤先生">佐藤先生</option>
-              <option value="伊藤先生">伊藤先生</option>
-              <option value="山本先生">山本先生</option>
-              <option value="中村先生">中村先生</option>
-              <option value="松本先生">松本先生</option>
-              <option value="小林先生">小林先生</option>
-              <option value="渡辺先生">渡辺先生</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="roomInput">教室</label>
-            <select id="roomInput">
-              <option value="101">101</option>
-              <option value="102">102</option>
-              <option value="202">202</option>
-              <option value="303">303</option>
-              <option value="404">404</option>
-              <option value="ラボ1">ラボ1</option>
-              <option value="体育館">体育館</option>
-              <option value="美術室">美術室</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="periodInput">時限</label>
-            <select id="periodInput">
-              <option value="1">1限</option>
-              <option value="2">2限</option>
-              <option value="3">3限</option>
-              <option value="4">4限</option>
-              <option value="5">5限</option>
-              <option value="6">6限</option>
-              <option value="7">7限</option>
-              <option value="8">8限</option>
-              <option value="9">9限</option>
-              <option value="10">10限</option>
-              <option value="11">11限</option>
-              <option value="12">12限</option>
-            </select>
-          </div>
-          <div class="field" style="grid-column: 1 / -1;">
-            <button id="addSubjectBtn" class="primary-btn" type="button">授業を追加</button>
-          </div>
-        </div>
-
-        <div id="status" class="note">授業を追加してから、下の時間割表で曜日と時限を選んで登録します。</div>
+        <div id="status" class="note">曜日と時限に合う授業を選んで登録します。</div>
 
         <form id="scheduleForm">
           <div class="grid-wrap">
@@ -218,9 +156,9 @@
       </div>
     </div>
 
-    <script type="module" src="./firebase.js?v=20260921"></script>
-    <script type="module" src="./auth.js?v=20260921"></script>
-    <script type="module" src="./js/auth/auth-guard.js?v=20260921"></script>
-    <script type="module" src="./js/schedule-plan.js?v=20260921"></script>
+    <script type="module" src="./firebase.js?v=20260921-rules3"></script>
+    <script type="module" src="./auth.js?v=20260921-rules3"></script>
+    <script type="module" src="./js/auth/auth-guard.js?v=20260921-rules3"></script>
+    <script type="module" src="./js/schedule-plan.js?v=20260921-rules3"></script>
   </body>
 </html>

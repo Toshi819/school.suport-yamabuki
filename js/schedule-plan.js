@@ -3,218 +3,104 @@
   const periods = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
   const grid = document.getElementById("scheduleGrid");
   const form = document.getElementById("scheduleForm");
-  const addSubjectBtn = document.getElementById("addSubjectBtn");
-  const subjectNameInput = document.getElementById("subjectName");
-  const teacherInput = document.getElementById("teacherInput");
-  const roomInput = document.getElementById("roomInput");
-  const periodInput = document.getElementById("periodInput");
   const status = document.getElementById("status");
-
-  const getCurrentUser = window.studyhubAuth?.getCurrentUser;
-  const getLocalSubjects = window.studyhubAuth?.getLocalSubjects;
-  const upsertLocalSubject = window.studyhubAuth?.upsertLocalSubject;
-  const upsertLocalClass = window.studyhubAuth?.upsertLocalClass;
   const auth = window.studyhubFirebase?.auth;
   const db = window.studyhubFirebase?.db;
-
-  const defaultSubjects = [
-    { name: "国語", teacher: "田中先生", room: "101", floor: 1 },
-    { name: "数学", teacher: "佐藤先生", room: "202", floor: 2 },
-    { name: "英語", teacher: "伊藤先生", room: "303", floor: 3 },
-    { name: "理科", teacher: "山本先生", room: "404", floor: 4 },
-    { name: "社会", teacher: "中村先生", room: "105", floor: 1 },
-    { name: "情報", teacher: "松本先生", room: "ラボ1", floor: 2 },
-    { name: "保健体育", teacher: "小林先生", room: "体育館", floor: 1 },
-    { name: "美術", teacher: "渡辺先生", room: "美術室", floor: 2 },
-  ];
+  const getCurrentUser = window.studyhubAuth?.getCurrentUser;
+  let subjectCatalog = [];
 
   function getUser() {
-    return (auth && auth.currentUser) || (getCurrentUser ? getCurrentUser() : null);
-  }
-
-  function isScheduleFixed(user) {
-    return user && localStorage.getItem(`studyhub_schedule_fixed_${user.uid}`) === "true";
-  }
-
-  function getSubjectOptions() {
-    const subjects = getLocalSubjects ? getLocalSubjects() : {};
-    const savedSubjects = Object.values(subjects || {}).filter((item) => item && item.name);
-    return savedSubjects.length ? savedSubjects : defaultSubjects;
+    return auth?.currentUser || getCurrentUser?.();
   }
 
   function renderGrid() {
-    if (!grid) return;
     grid.innerHTML = "";
-
-    const blank = document.createElement("div");
-    blank.className = "cell head";
-    blank.textContent = "";
-    grid.appendChild(blank);
-
-    dayNames.forEach((day) => {
-      const header = document.createElement("div");
-      header.className = "cell head";
-      header.textContent = day;
-      grid.appendChild(header);
-    });
-
-    const subjectOptions = getSubjectOptions();
-    const listForSelect = [
-      { name: "未設定", value: "" },
-      ...subjectOptions.map((subject) => ({ ...subject, value: subject.name })),
-    ];
+    grid.appendChild(Object.assign(document.createElement("div"), { className: "cell head" }));
+    dayNames.forEach((day) => grid.appendChild(Object.assign(document.createElement("div"), { className: "cell head", textContent: day })));
 
     periods.forEach((period) => {
-      const label = document.createElement("div");
-      label.className = "cell period-label";
-      label.textContent = `${period}限`;
-      grid.appendChild(label);
-
+      grid.appendChild(Object.assign(document.createElement("div"), { className: "cell period-label", textContent: `${period}限` }));
       dayNames.forEach((day) => {
         const wrapper = document.createElement("div");
         wrapper.className = "cell";
-
         const select = document.createElement("select");
         select.name = `${day}_${period}`;
         select.setAttribute("aria-label", `${day}${period}限`);
-
-        listForSelect.forEach((subject) => {
-          const option = new Option(subject.name, subject.value || "", false, false);
-          if (!subject.value) {
-            option.selected = true;
-          }
-          select.add(option);
-        });
-
+        select.add(new Option("未設定", ""));
+        subjectCatalog
+          .filter((subject) => subject.day === day && Number(subject.period) === period)
+          .forEach((subject) => select.add(new Option(`${subject.name}（${subject.teacher}）`, subject.id)));
         wrapper.appendChild(select);
         grid.appendChild(wrapper);
       });
     });
   }
 
-  if (addSubjectBtn) {
-    addSubjectBtn.addEventListener("click", () => {
-      const name = subjectNameInput ? String(subjectNameInput.value || "").trim() : "";
-      const teacher = teacherInput ? String(teacherInput.value || "").trim() : "";
-      const room = roomInput ? String(roomInput.value || "").trim() : "";
-      const period = Number(periodInput ? periodInput.value || 1 : 1);
-
-      if (!name || !teacher || !room) {
-        alert("授業名・先生・教室を選択してください");
-        return;
-      }
-
-      if (typeof upsertLocalSubject === "function") {
-        upsertLocalSubject(name, {
-          name,
-          teacher,
-          room,
-          floor: 1,
-          day: "月",
-          period,
-          updatedAt: new Date(),
-        });
-      }
-
-      if (status) {
-        status.textContent = `${name} を授業一覧に追加しました。`;
-      }
-
-      renderGrid();
-    });
+  async function loadSubjectCatalog() {
+    const snapshot = await db.collection("subjects").get();
+    subjectCatalog = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+    renderGrid();
+    if (status) status.textContent = subjectCatalog.length ? "曜日と時限に合う授業を選んで登録します。" : "管理者が授業マスタを登録するまで選択できる授業はありません。";
   }
 
-  async function ensureLocalSubjectsLoaded() {
-    if (!getLocalSubjects) return;
+  async function persistScheduleEntry(subject, currentUser, day, period) {
+    await db.collection("classes").doc(`${currentUser.uid}_${day}_${period}`).set({
+      ownerUid: currentUser.uid,
+      subjectId: subject.id,
+      name: subject.name,
+      teacher: subject.teacher || "",
+      room: subject.room || "",
+      floor: Number(subject.floor || 0),
+      day,
+      period,
+      updatedAt: new Date(),
+      createdAt: new Date(),
+    }, { merge: true });
+  }
 
-    const subjects = getLocalSubjects();
-    if (Object.keys(subjects || {}).length > 0) {
-      renderGrid();
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const currentUser = getUser();
+    if (!currentUser) {
+      window.location.href = "./index.html";
       return;
     }
 
-    renderGrid();
-  }
-
-  async function persistScheduleEntry(item, currentUser) {
-    const payload = {
-      ownerUid: currentUser.uid,
-      name: item.name,
-      teacher: item.teacher || "",
-      room: item.room || "",
-      floor: Number(item.floor || 0),
-      day: item.day,
-      period: Number(item.period),
-      updatedAt: new Date(),
-      createdAt: item.createdAt || new Date(),
-    };
-
-    if (db && auth) {
-      try {
-        await db.collection("classes").doc(item.id).set(payload, { merge: true });
-        await db.collection("users").doc(currentUser.uid).set({ scheduleFixed: true, updatedAt: new Date() }, { merge: true });
-        return;
-      } catch (error) {
-        console.warn("Firebase schedule save failed, falling back to local storage.", error);
-      }
-    }
-
-    if (typeof upsertLocalClass === "function") {
-      upsertLocalClass(item.id, payload);
-    }
-  }
-
-  if (form) {
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const currentUser = getUser();
-      if (!currentUser) {
-        window.location.href = "./index.html";
-        return;
-      }
-
-      const subjects = getLocalSubjects ? getLocalSubjects() : {};
-      const subjectCatalog = Object.keys(subjects || {}).length ? Object.values(subjects) : defaultSubjects;
-      const selectedNames = new Map();
-
-      dayNames.forEach((day) => {
-        periods.forEach((period) => {
-          const key = `${day}_${period}`;
-          const select = form.elements.namedItem(key);
-          const value = select && select.value ? String(select.value).trim() : "";
-          if (value) {
-            const subjectInfo = subjectCatalog.find((item) => item && item.name === value);
-            if (subjectInfo) {
-              selectedNames.set(`${day}_${period}`, {
-                ...subjectInfo,
-                id: `${currentUser.uid}_${day}_${period}`,
-                ownerUid: currentUser.uid,
-                day,
-                period,
-              });
-            }
+    try {
+      for (const day of dayNames) {
+        for (const period of periods) {
+          const select = form.elements.namedItem(`${day}_${period}`);
+          const subject = subjectCatalog.find((item) => item.id === select?.value);
+          const classRef = db.collection("classes").doc(`${currentUser.uid}_${day}_${period}`);
+          if (subject) {
+            await persistScheduleEntry(subject, currentUser, day, period);
+          } else {
+            await classRef.delete();
           }
-        });
-      });
-
-      const saved = [...selectedNames.values()];
-      for (const item of saved) {
-        await persistScheduleEntry(item, currentUser);
+        }
       }
-
+      await db.collection("users").doc(currentUser.uid).set({ scheduleFixed: true, updatedAt: new Date() }, { merge: true });
       localStorage.setItem(`studyhub_schedule_fixed_${currentUser.uid}`, "true");
       alert("時間割を登録しました");
       window.location.href = "./home.html";
+    } catch (error) {
+      console.error(error);
+      if (status) status.textContent = "時間割の保存に失敗しました。Firebaseのルールを確認してください。";
+    }
+  });
+
+  (async () => {
+    const authenticatedUser = window.studyhubFirebase?.authReady
+      ? await window.studyhubFirebase.authReady
+      : getUser();
+    if (!authenticatedUser) {
+      window.location.href = "./index.html";
+      return;
+    }
+
+    loadSubjectCatalog().catch((error) => {
+      console.error(error);
+      if (status) status.textContent = "授業マスタを読み込めませんでした。";
     });
-  }
-
-  const currentUser = getUser();
-  if (isScheduleFixed(currentUser)) {
-    window.location.href = "./home.html";
-    return;
-  }
-
-  sessionStorage.removeItem("studyhub_registration_in_progress");
-  ensureLocalSubjectsLoaded();
+  })();
 })();

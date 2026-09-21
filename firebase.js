@@ -36,6 +36,13 @@ import {
   try {
     const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
     const authInstance = getAuth(app);
+    let unsubscribeAuthReady = () => {};
+    const authReady = new Promise((resolve) => {
+      unsubscribeAuthReady = onAuthStateChanged(authInstance, (user) => {
+        unsubscribeAuthReady();
+        resolve(user);
+      });
+    });
     const firestore = initializeFirestore(app, {
       experimentalForceLongPolling: true,
     });
@@ -91,6 +98,7 @@ import {
       auth,
       db,
       authInstance,
+      authReady,
       firestore,
       GoogleAuthProvider,
       isFallback: false,

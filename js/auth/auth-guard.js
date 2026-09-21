@@ -41,6 +41,12 @@
     }
   }
 
+  const authReady = window.studyhubFirebase?.authReady;
+  if (authReady) {
+    authReady.then((user) => evaluateAccess(user));
+    return;
+  }
+
   const localUser = getCurrentUser ? getCurrentUser() : null;
   if (localUser) {
     evaluateAccess(localUser);

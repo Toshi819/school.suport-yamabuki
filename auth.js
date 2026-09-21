@@ -46,6 +46,11 @@
     return `${String(username).trim()}@schoolapp.local`;
   }
 
+  function getProfileFields(profile = {}) {
+    const { password, ...safeProfile } = profile;
+    return safeProfile;
+  }
+
   const useRemoteBackend = !!(db && auth && typeof navigator !== "undefined" && navigator.onLine !== false);
 
   function getCurrentUser() {
@@ -147,7 +152,7 @@
             provider: user.providerData?.[0]?.providerId || extra.provider || "password",
             createdAt: new Date(),
             lastLogin: new Date(),
-            ...extra,
+            ...getProfileFields(extra),
           };
 
           await userRef.set(profile, { merge: true });
@@ -160,13 +165,16 @@
           email: user.email || extra.email || userSnap.data().email || "",
           provider: user.providerData?.[0]?.providerId || extra.provider || userSnap.data().provider || "password",
           lastLogin: new Date(),
-          ...extra,
+          ...getProfileFields(extra),
         };
 
         await userRef.set(profile, { merge: true });
         return profile;
       } catch (error) {
         console.warn("Firebase profile sync failed, using local storage fallback.", error);
+        if (useRemoteBackend) {
+          throw error;
+        }
       }
     }
 
@@ -179,7 +187,7 @@
       provider: user.provider || extra.provider || "password",
       createdAt: cloneDateValue(user.createdAt || new Date()),
       lastLogin: new Date(),
-      ...extra,
+      ...getProfileFields(extra),
     };
 
     const users = getLocalUsers();
@@ -212,7 +220,6 @@
       providerData: [{ providerId: "password" }],
       createdAt: new Date(),
       userId: `SH-${String(Object.keys(users).length + 1).padStart(6, "0")}`,
-      password,
     };
 
     try {
@@ -223,7 +230,6 @@
           username: safeUsername,
           email,
           provider: "password",
-          password,
         });
         setCurrentUser({ ...userData, ...firebaseProfile });
         return { user: userData, profile: firebaseProfile };
@@ -232,11 +238,14 @@
       console.warn("Firebase registration failed; using local storage fallback.", error);
     }
 
+    if (useRemoteBackend) {
+      throw new Error("Firebaseへの登録に失敗しました");
+    }
+
     const profile = await ensureUserProfile(user, {
       username: safeUsername,
       email,
       provider: "password",
-      password,
     });
     users[user.uid] = { ...user, ...profile };
     writeStorage(STORAGE_KEYS.users, users);
@@ -255,7 +264,6 @@
           username: safeUsername,
           email,
           provider: "password",
-          password,
         });
         return { user: userCredential.user, profile };
       } catch (error) {
@@ -263,24 +271,7 @@
       }
     }
 
-    const users = getLocalUsers();
-    const candidate = Object.values(users).find((entry) => entry.username === safeUsername && entry.email === email);
-    if (!candidate || candidate.password !== password) {
-      throw new Error("ユーザー名とパスワードを確認してください");
-    }
-
-    const user = {
-      uid: candidate.uid,
-      email: candidate.email,
-      username: candidate.username,
-      displayName: candidate.username,
-      provider: "password",
-      providerData: [{ providerId: "password" }],
-      createdAt: candidate.createdAt || new Date(),
-    };
-
-    setCurrentUser({ ...user, ...candidate });
-    return { user, profile: candidate };
+    throw new Error("Firebaseに接続できないためログインできません");
   }
 
   async function loginWithGoogle() {
@@ -319,6 +310,16 @@
       await auth.signOut();
     }
     setCurrentUser(null);
+  }
+
+  async function getUserProfile(uid) {
+    if (!uid || !useRemoteBackend) return null;
+    const snapshot = await db.collection("users").doc(uid).get();
+    return snapshot.exists ? snapshot.data() : null;
+  }
+
+  function isAdmin(profile) {
+    return profile?.role === "admin";
   }
 
   async function importSubjectsFromCsv(rows = []) {
@@ -371,6 +372,8 @@
     setCurrentUser,
     getNextUserId,
     ensureUserProfile,
+    getUserProfile,
+    isAdmin,
     registerWithEmail,
     loginWithEmail,
     loginWithGoogle,
