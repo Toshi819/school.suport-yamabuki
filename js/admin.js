@@ -19,6 +19,16 @@
   let allSubjects = [];
   let editingSubjectId = "";
 
+  document.querySelectorAll("[data-admin-panel]").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const panelName = tab.dataset.adminPanel;
+      document.querySelectorAll(".admin-tab").forEach((item) => item.classList.toggle("active", item === tab));
+      document.getElementById("adminSubjectsPanel").hidden = panelName !== "subjects";
+      document.getElementById("adminUsersPanel").hidden = panelName !== "users";
+      document.getElementById("adminReportsPanel").hidden = panelName !== "reports";
+    });
+  });
+
   logoutButton?.addEventListener("click", async () => {
     try {
       await logoutUser();

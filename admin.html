@@ -19,6 +19,9 @@
       .subject-filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 20px; padding: 14px; background: #f8fbff; border-radius: 14px; }
       .subject-filters label { display: grid; gap: 5px; color: var(--navy); font-size: 0.85rem; font-weight: 700; }
       .subject-filters select { min-height: 40px; border: 1px solid rgba(22, 59, 99, 0.2); border-radius: 10px; padding: 6px 8px; }
+      .admin-tabs { display: flex; gap: 8px; margin: 18px 0; border-bottom: 1px solid rgba(22, 59, 99, 0.15); overflow-x: auto; }
+      .admin-tab { border: 0; border-bottom: 3px solid transparent; background: transparent; color: var(--muted); padding: 10px 12px; white-space: nowrap; cursor: pointer; font-weight: 700; }
+      .admin-tab.active { border-bottom-color: var(--orange); color: var(--navy); }
       .subject-row { display: flex; justify-content: space-between; gap: 12px; align-items: center; border-bottom: 1px solid rgba(22, 59, 99, 0.14); padding: 12px 0; }
       .subject-meta { color: var(--muted); font-size: 0.9rem; }
       .delete-btn { border: 1px solid #d95d5d; color: #b64a4a; background: #fff; border-radius: 10px; padding: 8px 12px; cursor: pointer; }
@@ -44,6 +47,12 @@
           </div>
           <a href="./home.html" class="secondary-btn">ホームへ戻る</a>
         </div>
+        <nav class="admin-tabs" aria-label="管理者メニュー">
+          <button class="admin-tab active" type="button" data-admin-panel="subjects">授業の追加</button>
+          <button class="admin-tab" type="button" data-admin-panel="users">ユーザーの管理</button>
+          <button class="admin-tab" type="button" data-admin-panel="reports">問題の報告</button>
+        </nav>
+        <section id="adminSubjectsPanel" class="admin-panel">
         <form id="adminSubjectForm" class="admin-form">
           <label>授業名<input id="adminSubjectName" required maxlength="80" /></label>
           <label>先生<input id="adminTeacher" required maxlength="80" /></label>
@@ -65,12 +74,13 @@
           <label>コマ数<select id="subjectFilterSpan"><option value="all">すべて</option><option value="single">1コマ</option><option value="double">2コマ</option><option value="four">4コマ</option></select></label>
         </div>
         <div id="adminSubjectList" class="subject-list"></div>
-        <section class="account-section">
+        </section>
+        <section id="adminUsersPanel" class="admin-panel account-section" hidden>
           <h2>アカウント管理</h2>
           <p class="note">パスワードは表示せず、必要な場合は本人のメールアドレスへ再設定メールを送信します。</p>
           <div id="adminAccountList" class="subject-list"></div>
         </section>
-        <section class="account-section">
+        <section id="adminReportsPanel" class="admin-panel account-section" hidden>
           <h2>問題報告</h2>
           <div id="adminReportList" class="subject-list"></div>
         </section>
@@ -79,9 +89,9 @@
         </div>
       </section>
     </main>
-    <script type="module" src="./firebase.js?v=20260921-report1"></script>
-    <script type="module" src="./auth.js?v=20260921-report1"></script>
-    <script type="module" src="./js/auth/auth-guard.js?v=20260921-report1"></script>
-    <script type="module" src="./js/admin.js?v=20260921-report1"></script>
+    <script type="module" src="./firebase.js?v=20260921-admin-tabs1"></script>
+    <script type="module" src="./auth.js?v=20260921-admin-tabs1"></script>
+    <script type="module" src="./js/auth/auth-guard.js?v=20260921-admin-tabs1"></script>
+    <script type="module" src="./js/admin.js?v=20260921-admin-tabs1"></script>
   </body>
 </html>

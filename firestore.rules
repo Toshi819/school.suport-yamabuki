@@ -39,5 +39,11 @@ service cloud.firestore {
     match /counters/{counterId} {
       allow read, write: if signedIn();
     }
+
+    match /reports/{reportId} {
+      allow create: if signedIn()
+        && request.resource.data.ownerUid == request.auth.uid;
+      allow read, update, delete: if isAdmin();
+    }
   }
 }
