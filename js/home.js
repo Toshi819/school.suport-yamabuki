@@ -82,7 +82,7 @@
             <span class="room">${subject.room || "教室未設定"}</span>
           `;
         } else {
-          cell.innerHTML = "<span>＋</span>";
+          cell.innerHTML = "";
         }
 
         timetableGrid.appendChild(cell);

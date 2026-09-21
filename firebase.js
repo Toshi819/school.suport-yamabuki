@@ -50,6 +50,7 @@ import {
     });
 
     const wrapSnapshot = (snapshot) => ({
+      id: snapshot.id || "",
       exists: typeof snapshot.exists === "function" ? snapshot.exists() : false,
       size: snapshot.size,
       empty: snapshot.empty,

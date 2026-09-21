@@ -72,6 +72,11 @@
         overflow-x: auto;
       }
 
+      .mobile-grid-wrap,
+      .mobile-picker-backdrop {
+        display: none;
+      }
+
       .schedule-grid {
         display: grid;
         grid-template-columns: 60px repeat(5, minmax(120px, 1fr));
@@ -125,8 +130,143 @@
       }
 
       @media (max-width: 620px) {
+        .shell {
+          padding: 12px 8px 24px;
+        }
+
+        .card {
+          border-radius: 16px;
+          padding: 12px 8px;
+        }
+
+        .top-row {
+          align-items: flex-start;
+          flex-direction: column;
+          margin-bottom: 10px;
+        }
+
+        .top-row h1 {
+          font-size: 1.2rem;
+        }
+
+        .top-row .secondary-btn {
+          width: 100%;
+        }
+
         .add-subject-panel {
           grid-template-columns: 1fr;
+        }
+
+        .grid-wrap {
+          display: none;
+        }
+
+        .mobile-grid-wrap {
+          display: block;
+          overflow-x: auto;
+          margin-top: 12px;
+        }
+
+        .mobile-grid {
+          display: grid;
+          grid-template-columns: 36px repeat(5, minmax(54px, 1fr));
+          min-width: 330px;
+        }
+
+        .mobile-cell {
+          min-height: 54px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px dashed #0871a7;
+          background: #fff;
+          color: var(--navy);
+          font-size: 0.68rem;
+          font-weight: 700;
+          text-align: center;
+          padding: 3px;
+        }
+
+        .mobile-cell.header,
+        .mobile-cell.period {
+          border: 0;
+          background: #fff;
+          font-size: 0.68rem;
+        }
+
+        .mobile-cell.filled {
+          background: #13a5d1;
+          color: #fff;
+          border-style: solid;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .mobile-cell .subject {
+          font-size: 0.65rem;
+          line-height: 1.15;
+        }
+
+        .mobile-cell .room {
+          font-size: 0.55rem;
+          color: var(--muted);
+        }
+
+        .mobile-cell .add-slot {
+          width: 100%;
+          height: 100%;
+          min-height: 48px;
+          border: 0;
+          background: transparent;
+          color: #0871a7;
+          font-size: 1.35rem;
+          cursor: pointer;
+        }
+
+        .mobile-picker-backdrop {
+          position: fixed;
+          z-index: 30;
+          inset: 0;
+          display: none;
+          align-items: flex-end;
+          background: rgba(22, 59, 99, 0.32);
+        }
+
+        .mobile-picker-backdrop.open {
+          display: flex;
+        }
+
+        .mobile-picker {
+          width: 100%;
+          max-height: 72vh;
+          overflow-y: auto;
+          padding: 16px;
+          border-radius: 18px 18px 0 0;
+          background: #fff;
+        }
+
+        .mobile-picker h2 {
+          margin: 0 0 12px;
+          color: var(--navy);
+          font-size: 1rem;
+        }
+
+        .mobile-picker button {
+          width: 100%;
+          min-height: 44px;
+          margin-top: 8px;
+          border: 1px solid rgba(22, 59, 99, 0.16);
+          border-radius: 10px;
+          background: #f8fbff;
+          color: var(--navy);
+          text-align: left;
+          padding: 8px 12px;
+          font-weight: 700;
+        }
+
+        .mobile-picker .clear-choice {
+          background: #fff;
+          color: #b64a4a;
         }
       }
     </style>
@@ -148,6 +288,9 @@
           <div class="grid-wrap">
             <div id="scheduleGrid" class="schedule-grid"></div>
           </div>
+          <div class="mobile-grid-wrap">
+            <div id="mobileScheduleGrid" class="mobile-grid"></div>
+          </div>
 
           <div class="action-row">
             <button type="submit" class="primary-btn">これで登録する</button>
@@ -155,10 +298,18 @@
         </form>
       </div>
     </div>
+    <div id="mobilePickerBackdrop" class="mobile-picker-backdrop" hidden>
+      <div class="mobile-picker" role="dialog" aria-modal="true" aria-labelledby="mobilePickerTitle">
+        <h2 id="mobilePickerTitle">授業を選択</h2>
+        <div id="mobilePickerOptions"></div>
+        <button class="clear-choice" id="mobilePickerClear" type="button">未設定に戻す</button>
+        <button id="mobilePickerClose" type="button">閉じる</button>
+      </div>
+    </div>
 
-    <script type="module" src="./firebase.js?v=20260921-schedulefix1"></script>
-    <script type="module" src="./auth.js?v=20260921-schedulefix1"></script>
-    <script type="module" src="./js/auth/auth-guard.js?v=20260921-schedulefix1"></script>
-    <script type="module" src="./js/schedule-plan.js?v=20260921-schedulefix1"></script>
+    <script type="module" src="./firebase.js?v=20260921-mobile1"></script>
+    <script type="module" src="./auth.js?v=20260921-mobile1"></script>
+    <script type="module" src="./js/auth/auth-guard.js?v=20260921-mobile1"></script>
+    <script type="module" src="./js/schedule-plan.js?v=20260921-mobile1"></script>
   </body>
 </html>

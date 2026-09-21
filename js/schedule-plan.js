@@ -2,12 +2,19 @@
   const dayNames = ["月", "火", "水", "木", "金"];
   const periods = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
   const grid = document.getElementById("scheduleGrid");
+  const mobileGrid = document.getElementById("mobileScheduleGrid");
   const form = document.getElementById("scheduleForm");
   const status = document.getElementById("status");
+  const mobilePickerBackdrop = document.getElementById("mobilePickerBackdrop");
+  const mobilePickerTitle = document.getElementById("mobilePickerTitle");
+  const mobilePickerOptions = document.getElementById("mobilePickerOptions");
+  const mobilePickerClear = document.getElementById("mobilePickerClear");
+  const mobilePickerClose = document.getElementById("mobilePickerClose");
   const auth = window.studyhubFirebase?.auth;
   const db = window.studyhubFirebase?.db;
   const getCurrentUser = window.studyhubAuth?.getCurrentUser;
   let subjectCatalog = [];
+  let activeMobileSlot = null;
 
   function getUser() {
     return auth?.currentUser || getCurrentUser?.();
@@ -34,7 +41,90 @@
         grid.appendChild(wrapper);
       });
     });
+
+    renderMobileGrid();
   }
+
+  function getSelect(day, period) {
+    return form.elements.namedItem(`${day}_${period}`);
+  }
+
+  function renderMobileGrid() {
+    if (!mobileGrid) return;
+    mobileGrid.innerHTML = "";
+    mobileGrid.appendChild(Object.assign(document.createElement("div"), { className: "mobile-cell header" }));
+    dayNames.forEach((day) => {
+      mobileGrid.appendChild(Object.assign(document.createElement("div"), { className: "mobile-cell header", textContent: day }));
+    });
+
+    periods.forEach((period) => {
+      mobileGrid.appendChild(Object.assign(document.createElement("div"), { className: "mobile-cell period", textContent: `${period}限` }));
+      dayNames.forEach((day) => {
+        const cell = document.createElement("div");
+        const select = getSelect(day, period);
+        const selectedSubject = subjectCatalog.find((subject) => subject.id === select?.value);
+        cell.className = `mobile-cell ${selectedSubject ? "filled" : ""}`;
+        if (selectedSubject) {
+          cell.innerHTML = `<span class="subject">${selectedSubject.name}</span><span class="room">${selectedSubject.room || ""}</span>`;
+        } else {
+          const addButton = document.createElement("button");
+          addButton.className = "add-slot";
+          addButton.type = "button";
+          addButton.textContent = "+";
+          addButton.setAttribute("aria-label", `${day}${period}限の授業を選択`);
+          addButton.addEventListener("click", () => openMobilePicker(day, period));
+          cell.appendChild(addButton);
+        }
+        cell.addEventListener("click", () => {
+          if (selectedSubject) openMobilePicker(day, period);
+        });
+        mobileGrid.appendChild(cell);
+      });
+    });
+  }
+
+  function closeMobilePicker() {
+    activeMobileSlot = null;
+    if (mobilePickerBackdrop) {
+      mobilePickerBackdrop.classList.remove("open");
+      mobilePickerBackdrop.hidden = true;
+    }
+  }
+
+  function openMobilePicker(day, period) {
+    activeMobileSlot = { day, period };
+    const choices = subjectCatalog.filter((subject) => subject.day === day && Number(subject.period) === period);
+    mobilePickerTitle.textContent = `${day}${period}限の授業を選択`;
+    mobilePickerOptions.innerHTML = "";
+    choices.forEach((subject) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = `${subject.name}（${subject.teacher} / ${subject.room}）`;
+      button.addEventListener("click", () => {
+        getSelect(day, period).value = subject.id;
+        closeMobilePicker();
+        renderMobileGrid();
+      });
+      mobilePickerOptions.appendChild(button);
+    });
+    if (!choices.length) {
+      mobilePickerOptions.textContent = "この曜日・時限に選択できる授業はありません。";
+    }
+    mobilePickerBackdrop.hidden = false;
+    mobilePickerBackdrop.classList.add("open");
+  }
+
+  mobilePickerClear?.addEventListener("click", () => {
+    if (activeMobileSlot) {
+      getSelect(activeMobileSlot.day, activeMobileSlot.period).value = "";
+      closeMobilePicker();
+      renderMobileGrid();
+    }
+  });
+  mobilePickerClose?.addEventListener("click", closeMobilePicker);
+  mobilePickerBackdrop?.addEventListener("click", (event) => {
+    if (event.target === mobilePickerBackdrop) closeMobilePicker();
+  });
 
   async function loadSubjectCatalog() {
     const snapshot = await db.collection("subjects").get();
@@ -67,21 +157,28 @@
     }
 
     try {
+      const existingSnapshot = await db.collection("classes")
+        .where("ownerUid", "==", currentUser.uid)
+        .get();
+      const selectedClassIds = new Set();
+
       for (const day of dayNames) {
         for (const period of periods) {
           const select = form.elements.namedItem(`${day}_${period}`);
           const subject = subjectCatalog.find((item) => item.id === select?.value);
-          const classRef = db.collection("classes").doc(`${currentUser.uid}_${day}_${period}`);
           if (subject) {
+            selectedClassIds.add(`${currentUser.uid}_${day}_${period}`);
             await persistScheduleEntry(subject, currentUser, day, period);
-          } else {
-            const existingClass = await classRef.get();
-            if (existingClass.exists) {
-              await classRef.delete();
-            }
           }
         }
       }
+
+      for (const existingClass of existingSnapshot.docs) {
+        if (!selectedClassIds.has(existingClass.id)) {
+          await db.collection("classes").doc(existingClass.id).delete();
+        }
+      }
+
       await db.collection("users").doc(currentUser.uid).set({ scheduleFixed: true, updatedAt: new Date() }, { merge: true });
       localStorage.setItem(`studyhub_schedule_fixed_${currentUser.uid}`, "true");
       alert("時間割を登録しました");
