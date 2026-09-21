@@ -11,6 +11,7 @@
   const fourPeriodInput = document.getElementById("adminFourPeriod");
   const accountList = document.getElementById("adminAccountList");
   const logoutButton = document.getElementById("adminLogoutBtn");
+  let editingSubjectId = "";
 
   logoutButton?.addEventListener("click", async () => {
     try {
@@ -73,6 +74,29 @@
       const days = subject.isFourPeriod ? `${subject.day}・${subject.secondDay}` : subject.day;
       const span = subject.isFourPeriod ? "（4コマ）" : (subject.isDoublePeriod ? "（2コマ）" : "");
       details.innerHTML = `<strong>${subject.name}</strong><div class="subject-meta">${subject.category || "その他"} / ${days} ${subject.period}限${span} / ${subject.teacher} / ${subject.room}</div>`;
+      const actionWrap = document.createElement("div");
+      actionWrap.style.display = "flex";
+      actionWrap.style.gap = "8px";
+      const editButton = document.createElement("button");
+      editButton.className = "edit-btn";
+      editButton.type = "button";
+      editButton.textContent = "編集";
+      editButton.addEventListener("click", () => {
+        editingSubjectId = subject.id;
+        document.getElementById("adminSubjectName").value = subject.name || "";
+        document.getElementById("adminTeacher").value = subject.teacher || "";
+        document.getElementById("adminRoom").value = subject.room || "";
+        document.getElementById("adminFloor").value = String(subject.floor || 1);
+        dayInput.value = subject.day || "月";
+        periodInput.value = String(subject.period || 1);
+        document.getElementById("adminCategory").value = subject.category || "その他";
+        fourPeriodInput.checked = !!subject.isFourPeriod;
+        secondDayInput.value = subject.secondDay || "月";
+        document.getElementById("adminDoublePeriod").checked = !!subject.isDoublePeriod;
+        updateFourPeriodFields();
+        form.querySelector("button[type=submit]").textContent = "授業マスタを更新";
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
       const deleteButton = document.createElement("button");
       deleteButton.className = "delete-btn";
       deleteButton.type = "button";
@@ -83,7 +107,8 @@
         showStatus("授業マスタから削除しました。");
         await loadSubjects();
       });
-      row.append(details, deleteButton);
+      actionWrap.append(editButton, deleteButton);
+      row.append(details, actionWrap);
       list.appendChild(row);
     });
   }
@@ -173,7 +198,8 @@
     }
 
     try {
-      await db.collection("subjects").doc(subjectId(name, day, period)).set({
+      const targetId = editingSubjectId || subjectId(name, day, period);
+      await db.collection("subjects").doc(targetId).set({
         name,
         teacher,
         room,
@@ -188,6 +214,9 @@
       }, { merge: true });
       form.reset();
       periodInput.value = "1";
+      editingSubjectId = "";
+      updateFourPeriodFields();
+      form.querySelector("button[type=submit]").textContent = "授業マスタに追加";
       showStatus("授業マスタに追加しました。");
       await loadSubjects();
     } catch (error) {
