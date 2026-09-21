@@ -51,6 +51,16 @@
     return safeProfile;
   }
 
+  const STORAGE_LIMITS = {
+    unverified: 50 * 1024 * 1024,
+    submitted: 50 * 1024 * 1024,
+    verified: 1024 * 1024 * 1024,
+  };
+
+  function getStorageLimitBytes(status = "unverified") {
+    return STORAGE_LIMITS[status] || STORAGE_LIMITS.unverified;
+  }
+
   const useRemoteBackend = !!(db && auth && typeof navigator !== "undefined" && navigator.onLine !== false);
 
   function getCurrentUser() {
@@ -151,6 +161,8 @@
             role: "student",
             provider: user.providerData?.[0]?.providerId || extra.provider || "password",
             verificationStatus: "unverified",
+            storageLimitBytes: getStorageLimitBytes("unverified"),
+            storageUsedBytes: 0,
             createdAt: new Date(),
             lastLogin: new Date(),
             ...getProfileFields(extra),
@@ -165,6 +177,8 @@
           username: user.displayName || extra.username || userSnap.data().username || "ユーザー",
           email: user.email || extra.email || userSnap.data().email || "",
           provider: user.providerData?.[0]?.providerId || extra.provider || userSnap.data().provider || "password",
+          storageLimitBytes: userSnap.data().storageLimitBytes || getStorageLimitBytes(userSnap.data().verificationStatus),
+          storageUsedBytes: Number(userSnap.data().storageUsedBytes || 0),
           lastLogin: new Date(),
           ...getProfileFields(extra),
         };
@@ -394,6 +408,7 @@
     ensureUserProfile,
     getUserProfile,
     isAdmin,
+    getStorageLimitBytes,
     sendUserPasswordReset,
     registerWithEmail,
     loginWithEmail,

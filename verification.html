@@ -22,6 +22,7 @@
       <section class="verification-card">
         <h1>本人確認</h1>
         <p class="verification-note">学校メールアドレス、氏名、学籍番号を登録します。確認前でも基本機能は利用できます。</p>
+        <p id="storageLimitText" class="verification-note">現在の資料保存上限を読み込んでいます。</p>
         <form id="verificationForm" class="verification-form">
           <label for="schoolEmail">学校メールアドレス<input id="schoolEmail" type="email" autocomplete="email" required /></label>
           <label for="fullName">氏名<input id="fullName" type="text" autocomplete="name" required maxlength="80" /></label>
@@ -34,9 +35,9 @@
         <p id="verificationStatus" class="verification-note" aria-live="polite"></p>
       </section>
     </main>
-    <script type="module" src="./firebase.js?v=20260921-verification2"></script>
-    <script type="module" src="./auth.js?v=20260921-verification2"></script>
-    <script type="module" src="./js/auth/auth-guard.js?v=20260921-verification2"></script>
-    <script type="module" src="./js/verification.js?v=20260921-verification2"></script>
+    <script type="module" src="./firebase.js?v=20260921-capacity1"></script>
+    <script type="module" src="./auth.js?v=20260921-capacity1"></script>
+    <script type="module" src="./js/auth/auth-guard.js?v=20260921-capacity1"></script>
+    <script type="module" src="./js/verification.js?v=20260921-capacity1"></script>
   </body>
 </html>
