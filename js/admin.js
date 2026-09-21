@@ -29,7 +29,11 @@
   function updateFourPeriodFields() {
     const isFourPeriod = fourPeriodInput.checked;
     secondDayField.hidden = !isFourPeriod;
-    document.getElementById("adminDoublePeriod").disabled = isFourPeriod;
+    const doublePeriodInput = document.getElementById("adminDoublePeriod");
+    doublePeriodInput.disabled = isFourPeriod;
+    if (isFourPeriod) {
+      doublePeriodInput.checked = false;
+    }
     if (!isFourPeriod) {
       secondDayInput.value = "月";
     }
