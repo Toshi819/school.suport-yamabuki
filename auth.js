@@ -172,13 +172,19 @@
           return profile;
         }
 
+        const existingProfile = userSnap.data();
         const profile = {
-          ...userSnap.data(),
-          username: user.displayName || extra.username || userSnap.data().username || "ユーザー",
-          email: user.email || extra.email || userSnap.data().email || "",
-          provider: user.providerData?.[0]?.providerId || extra.provider || userSnap.data().provider || "password",
-          storageLimitBytes: userSnap.data().storageLimitBytes || getStorageLimitBytes(userSnap.data().verificationStatus),
-          storageUsedBytes: Number(userSnap.data().storageUsedBytes || 0),
+          ...existingProfile,
+          uid: user.uid,
+          userId: existingProfile.userId || await getNextUserId(),
+          username: user.displayName || extra.username || existingProfile.username || "ユーザー",
+          email: user.email || extra.email || existingProfile.email || "",
+          role: existingProfile.role || "student",
+          provider: user.providerData?.[0]?.providerId || extra.provider || existingProfile.provider || "password",
+          verificationStatus: existingProfile.verificationStatus || "unverified",
+          storageLimitBytes: existingProfile.storageLimitBytes || getStorageLimitBytes(existingProfile.verificationStatus || "unverified"),
+          storageUsedBytes: Number(existingProfile.storageUsedBytes || 0),
+          createdAt: existingProfile.createdAt || new Date(),
           lastLogin: new Date(),
           ...getProfileFields(extra),
         };
