@@ -11,7 +11,7 @@
       ? await window.studyhubAuth.getUserProfile(uid)
       : null;
     if (profile?.role === "admin") {
-      window.location.href = "./admin.html";
+      window.location.replace("./admin.html");
       return;
     }
     const scheduleFixed = uid ? localStorage.getItem(`studyhub_schedule_fixed_${uid}`) === "true" : false;

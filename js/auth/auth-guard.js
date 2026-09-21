@@ -10,7 +10,7 @@
     return localStorage.getItem(`studyhub_schedule_fixed_${user.uid}`) === "true";
   }
 
-  function evaluateAccess(user) {
+  async function evaluateAccess(user) {
     const isLoggedIn = !!user;
 
     if (!isLoggedIn && !publicPages.includes(currentPage)) {
@@ -20,6 +20,18 @@
 
     const registrationInProgress = sessionStorage.getItem("studyhub_registration_in_progress") === "true";
     const scheduleFixed = hasFixedSchedule(user);
+
+    if (isLoggedIn && window.studyhubAuth?.getUserProfile) {
+      try {
+        const profile = await window.studyhubAuth.getUserProfile(user.uid);
+        if (profile?.role === "admin" && currentPage !== "admin.html") {
+          window.location.replace("./admin.html");
+          return;
+        }
+      } catch (error) {
+        console.warn("Admin role lookup failed:", error);
+      }
+    }
 
     if (isLoggedIn && publicPages.includes(currentPage)) {
       window.studyhubAuth?.getUserProfile?.(user.uid).then((profile) => {
