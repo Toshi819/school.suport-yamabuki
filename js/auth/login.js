@@ -5,8 +5,15 @@
   const loginBtn = document.getElementById("loginBtn");
   const googleLoginBtn = document.getElementById("googleLoginBtn");
 
-  function redirectAfterLogin(user) {
+  async function redirectAfterLogin(user) {
     const uid = user?.uid;
+    const profile = uid && window.studyhubAuth?.getUserProfile
+      ? await window.studyhubAuth.getUserProfile(uid)
+      : null;
+    if (profile?.role === "admin") {
+      window.location.href = "./admin.html";
+      return;
+    }
     const scheduleFixed = uid ? localStorage.getItem(`studyhub_schedule_fixed_${uid}`) === "true" : false;
     window.location.href = scheduleFixed ? "./home.html" : "./schedule-plan.html";
   }
@@ -23,7 +30,7 @@
 
       try {
         const result = await loginWithEmail(username, password);
-        redirectAfterLogin(result?.user || result?.profile || window.studyhubAuth?.getCurrentUser?.());
+        await redirectAfterLogin(result?.user || result?.profile || window.studyhubAuth?.getCurrentUser?.());
       } catch (error) {
         console.error(error);
         alert("ログインに失敗しました。ユーザー名とパスワードを確認してください。");
@@ -35,7 +42,7 @@
     googleLoginBtn.addEventListener("click", async () => {
       try {
         const result = await loginWithGoogle();
-        redirectAfterLogin(result?.user || result?.profile || window.studyhubAuth?.getCurrentUser?.());
+        await redirectAfterLogin(result?.user || result?.profile || window.studyhubAuth?.getCurrentUser?.());
       } catch (error) {
         console.error(error);
         alert(error.message || "Googleログインに失敗しました。");

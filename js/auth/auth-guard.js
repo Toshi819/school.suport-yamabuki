@@ -21,18 +21,24 @@
     const registrationInProgress = sessionStorage.getItem("studyhub_registration_in_progress") === "true";
     const scheduleFixed = hasFixedSchedule(user);
 
-    if (isLoggedIn && registrationInProgress && publicPages.includes(currentPage)) {
-      window.location.href = "./schedule-plan.html";
+    if (isLoggedIn && publicPages.includes(currentPage)) {
+      window.studyhubAuth?.getUserProfile?.(user.uid).then((profile) => {
+        if (profile?.role === "admin") {
+          window.location.href = "./admin.html";
+        } else if (registrationInProgress || !scheduleFixed) {
+          window.location.href = "./schedule-plan.html";
+        } else {
+          window.location.href = "./home.html";
+        }
+      }).catch((error) => {
+        console.warn("Role lookup failed:", error);
+        window.location.href = scheduleFixed ? "./home.html" : "./schedule-plan.html";
+      });
       return;
     }
 
-    if (isLoggedIn && !scheduleFixed && (publicPages.includes(currentPage) || currentPage === "home.html")) {
+    if (isLoggedIn && !scheduleFixed && currentPage === "home.html") {
       window.location.href = "./schedule-plan.html";
-      return;
-    }
-
-    if (isLoggedIn && scheduleFixed && publicPages.includes(currentPage)) {
-      window.location.href = "./home.html";
       return;
     }
 
