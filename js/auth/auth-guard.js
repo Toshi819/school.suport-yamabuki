@@ -19,11 +19,11 @@
     }
 
     const registrationInProgress = sessionStorage.getItem("studyhub_registration_in_progress") === "true";
-    const scheduleFixed = hasFixedSchedule(user);
+    let profile = null;
 
     if (isLoggedIn && window.studyhubAuth?.getUserProfile) {
       try {
-        const profile = await window.studyhubAuth.getUserProfile(user.uid);
+        profile = await window.studyhubAuth.getUserProfile(user.uid);
         if (profile?.role === "admin" && !["admin.html", "report.html"].includes(currentPage)) {
           window.location.replace("./admin.html");
           return;
@@ -32,6 +32,8 @@
         console.warn("Admin role lookup failed:", error);
       }
     }
+
+    const scheduleFixed = hasFixedSchedule(user) || profile?.scheduleFixed === true;
 
     if (isLoggedIn && publicPages.includes(currentPage)) {
       window.studyhubAuth?.getUserProfile?.(user.uid).then((profile) => {

@@ -14,7 +14,9 @@
       window.location.replace("./admin.html");
       return;
     }
-    const scheduleFixed = uid ? localStorage.getItem(`studyhub_schedule_fixed_${uid}`) === "true" : false;
+    const scheduleFixed = uid
+      ? localStorage.getItem(`studyhub_schedule_fixed_${uid}`) === "true" || profile?.scheduleFixed === true
+      : false;
     window.location.href = scheduleFixed ? "./home.html" : "./schedule-plan.html";
   }
 

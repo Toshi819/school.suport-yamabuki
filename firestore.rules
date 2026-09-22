@@ -27,8 +27,11 @@ service cloud.firestore {
     match /classes/{classId} {
       allow read, delete: if signedIn()
         && resource.data.ownerUid == request.auth.uid;
-      allow create, update: if signedIn()
+      allow create: if signedIn()
         && request.resource.data.ownerUid == request.auth.uid;
+      allow update: if signedIn()
+        && resource.data.ownerUid == request.auth.uid
+        && request.resource.data.ownerUid == resource.data.ownerUid;
     }
 
     match /subjects/{subjectId} {
