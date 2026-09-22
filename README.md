@@ -61,6 +61,7 @@ role: "admin"
 ```
 
 管理者画面では授業マスタ、ユーザー一覧、問題報告を管理できます。
+ユーザー管理では、資料の使用量・使用率・上限の変更、StudyHub内のアカウントデータ削除ができます。Firebase Authenticationのログインアカウント自体を削除する場合は、Firebase Admin SDKまたはCloud Functionsが必要です。
 
 ## Firebaseルール
 

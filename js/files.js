@@ -29,6 +29,14 @@
     await userRef.set({ storageUsedBytes: Math.max(0, current + Number(deltaBytes)) }, { merge: true });
   }
 
+  async function canUploadFile(user, file) {
+    const profile = await db.collection("users").doc(user.uid).get();
+    const data = profile.exists ? profile.data() : {};
+    const used = Number(data.storageUsedBytes || 0);
+    const limit = Number(data.storageLimitBytes || 50 * 1024 * 1024);
+    return { allowed: used + file.size <= limit, used, limit };
+  }
+
   function classLabel(item) {
     return `${item.name || "授業"} / ${item.day || "-"}${item.period || "-"}限`;
   }
@@ -162,6 +170,11 @@
     const folderId = folderSelect.value || "root";
     if (!user || !file || !subjectId) return;
     try {
+      const capacity = await canUploadFile(user, file);
+      if (!capacity.allowed) {
+        showStatus(`容量上限を超えるためアップロードできません。使用量 ${Math.ceil(capacity.used / 1024 / 1024)}MB / 上限 ${Math.ceil(capacity.limit / 1024 / 1024)}MB`);
+        return;
+      }
       const fileId = `${Date.now()}_${file.name}`.replace(/[^a-zA-Z0-9._-]/g, "_");
       const storagePath = folderId === "root" ? `subjects/${subjectId}/files/${fileId}` : `subjects/${subjectId}/folders/${folderId}/files/${fileId}`;
       const storageRef = storageApi.ref(storage, storagePath);

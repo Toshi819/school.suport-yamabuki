@@ -76,6 +76,13 @@
     return `${(value / (1024 * 1024 * 1024)).toFixed(2)} GB`;
   }
 
+  const storageLimitOptions = [
+    [50 * 1024 * 1024, "50 MB"],
+    [100 * 1024 * 1024, "100 MB"],
+    [500 * 1024 * 1024, "500 MB"],
+    [1024 * 1024 * 1024, "1 GB"],
+  ];
+
   function storageMarkup(account) {
     const used = Number(account.storageUsedBytes || 0);
     const limit = Number(account.storageLimitBytes || 0);
@@ -213,6 +220,25 @@
         row.appendChild(element);
       });
       row.insertAdjacentHTML("beforeend", storageMarkup(account));
+      const actions = document.createElement("div");
+      actions.className = "account-actions";
+      const limitSelect = document.createElement("select");
+      limitSelect.className = "limit-select";
+      limitSelect.setAttribute("aria-label", `${account.username || account.userId || "アカウント"}の保存容量上限`);
+      storageLimitOptions.forEach(([bytes, label]) => limitSelect.add(new Option(label, String(bytes))));
+      const currentLimit = Number(account.storageLimitBytes || 50 * 1024 * 1024);
+      if (!storageLimitOptions.some(([bytes]) => bytes === currentLimit)) limitSelect.add(new Option(formatBytes(currentLimit), String(currentLimit)));
+      limitSelect.value = String(currentLimit);
+      limitSelect.addEventListener("change", async () => {
+        try {
+          await db.collection("users").doc(account.id).set({ storageLimitBytes: Number(limitSelect.value) }, { merge: true });
+          showStatus(`${account.username || account.userId} の保存容量上限を変更しました。`);
+        } catch (error) {
+          console.error(error);
+          showStatus("保存容量上限の変更に失敗しました。");
+        }
+      });
+      actions.appendChild(limitSelect);
 
       const resetButton = document.createElement("button");
       resetButton.type = "button";
@@ -228,9 +254,38 @@
           showStatus("再設定メールの送信に失敗しました。");
         }
       });
-      row.appendChild(resetButton);
+      actions.appendChild(resetButton);
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.className = "account-delete-btn";
+      deleteButton.textContent = "アプリデータ削除";
+      deleteButton.addEventListener("click", () => deleteAccountData(account));
+      actions.appendChild(deleteButton);
+      row.appendChild(actions);
       accountList.appendChild(row);
     });
+  }
+
+  async function deleteAccountData(account) {
+    if (!window.confirm(`${account.username || account.userId || "このアカウント"}のStudyHubデータを削除しますか？Firebase Authenticationのログイン情報は残ります。`)) return;
+    try {
+      const [classes, cards, memos] = await Promise.all([
+        db.collection("classes").where("ownerUid", "==", account.id).get(),
+        db.collection("classCards").where("ownerUid", "==", account.id).get(),
+        db.collection("classMemos").where("ownerUid", "==", account.id).get(),
+      ]);
+      await Promise.all([
+        ...classes.docs.map((item) => db.collection("classes").doc(item.id).delete()),
+        ...cards.docs.map((item) => db.collection("classCards").doc(item.id).delete()),
+        ...memos.docs.map((item) => db.collection("classMemos").doc(item.id).delete()),
+        db.collection("users").doc(account.id).delete(),
+      ]);
+      showStatus("StudyHubのアカウントデータを削除しました。Firebase Authenticationは別途削除が必要です。");
+      await loadAccounts();
+    } catch (error) {
+      console.error(error);
+      showStatus("アカウントデータの削除に失敗しました。ルール公開状態を確認してください。");
+    }
   }
 
   async function loadReports() {
