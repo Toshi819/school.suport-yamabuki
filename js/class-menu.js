@@ -6,6 +6,7 @@
   const headerTitle = document.getElementById("classMenuTitle");
   const details = document.getElementById("subjectDetails");
   const filesLink = document.getElementById("filesLink");
+  const memoLink = document.getElementById("memoLink");
   const bottomProblemLink = document.getElementById("bottomProblemLink");
 
   async function boot() {
@@ -25,6 +26,7 @@
     headerTitle.textContent = label;
     details.textContent = `${data.day || ""}${data.period || ""}限 / ${data.room || "教室未設定"}`;
     filesLink.href = `./files.html?subjectId=${encodeURIComponent(data.subjectId || classId)}`;
+    memoLink.href = `./memo.html?classId=${encodeURIComponent(classId)}`;
     bottomProblemLink.href = "./problem.html";
   }
 
