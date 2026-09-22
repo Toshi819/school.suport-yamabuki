@@ -237,10 +237,15 @@
       updatedAt: new Date(),
       createdAt: new Date(),
     }, { merge: true });
+    await db.collection("classMembers").doc(`${subject.id}_${currentUser.uid}`).set({
+      subjectId: subject.id,
+      uid: currentUser.uid,
+      updatedAt: new Date(),
+    }, { merge: true });
 
     if (storage && storageApi) {
       try {
-        const folderMarker = storageApi.ref(storage, `classes/${classId}/.folder`);
+        const folderMarker = storageApi.ref(storage, `subjects/${subject.id}/.folder`);
         await storageApi.uploadBytes(folderMarker, new Blob([""], { type: "text/plain" }), {
           contentType: "text/plain",
         });
@@ -250,10 +255,10 @@
     }
   }
 
-  async function removeClassFolderMarker(classId) {
+  async function removeSubjectFolderMarker(subjectId) {
     if (!storage || !storageApi) return;
     try {
-      await storageApi.deleteObject(storageApi.ref(storage, `classes/${classId}/.folder`));
+      await storageApi.deleteObject(storageApi.ref(storage, `subjects/${subjectId}/.folder`));
     } catch (error) {
       if (error.code !== "storage/object-not-found") {
         console.warn("Storage folder marker deletion failed:", error);
@@ -290,10 +295,20 @@
         }
       }
 
+      const removedSubjectIds = new Set();
       for (const existingClass of existingSnapshot.docs) {
         if (!selectedClassIds.has(existingClass.id)) {
-          await removeClassFolderMarker(existingClass.id);
+          if (existingClass.data().subjectId) removedSubjectIds.add(existingClass.data().subjectId);
           await db.collection("classes").doc(existingClass.id).delete();
+        }
+      }
+
+      const remainingSnapshot = await db.collection("classes").where("ownerUid", "==", currentUser.uid).get();
+      const remainingSubjectIds = new Set(remainingSnapshot.docs.map((item) => item.data().subjectId).filter(Boolean));
+      for (const subjectId of removedSubjectIds) {
+        if (!remainingSubjectIds.has(subjectId)) {
+          await removeSubjectFolderMarker(subjectId);
+          await db.collection("classMembers").doc(`${subjectId}_${currentUser.uid}`).delete();
         }
       }
 

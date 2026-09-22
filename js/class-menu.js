@@ -23,7 +23,7 @@
     title.textContent = label;
     headerTitle.textContent = label;
     details.textContent = `${data.day || ""}${data.period || ""}限 / ${data.room || "教室未設定"}`;
-    filesLink.href = `./files.html?classId=${encodeURIComponent(classId)}`;
+    filesLink.href = `./files.html?subjectId=${encodeURIComponent(data.subjectId || classId)}`;
   }
 
   boot().catch((error) => {

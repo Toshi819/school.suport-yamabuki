@@ -5,6 +5,7 @@
   const form = document.getElementById("filesForm");
   const list = document.getElementById("fileList");
   const status = document.getElementById("filesStatus");
+  const requestedSubjectId = new URLSearchParams(window.location.search).get("subjectId") || "";
   let classes = [];
 
   function getUser() {
@@ -23,19 +24,28 @@
     const snapshot = await db.collection("classes").where("ownerUid", "==", user.uid).get();
     classes = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
     classSelect.innerHTML = "";
+    const uniqueClasses = new Map();
+    classes.forEach((item) => {
+      const subjectId = item.subjectId || item.id;
+      if (!uniqueClasses.has(subjectId)) uniqueClasses.set(subjectId, { ...item, id: subjectId });
+    });
+    classes = [...uniqueClasses.values()];
     classes.forEach((item) => classSelect.add(new Option(classLabel(item), item.id)));
     if (!classes.length) {
       showStatus("時間割に登録された授業がありません。");
       return;
     }
+    if (requestedSubjectId && classes.some((item) => item.id === requestedSubjectId)) {
+      classSelect.value = requestedSubjectId;
+    }
     await loadFiles();
   }
 
   async function loadFiles() {
-    const classId = classSelect.value;
+    const subjectId = classSelect.value;
     list.innerHTML = "";
-    if (!classId) return;
-    const snapshot = await db.collection(`classes/${classId}/files`).get();
+    if (!subjectId) return;
+    const snapshot = await db.collection(`subjects/${subjectId}/files`).get();
     if (!snapshot.docs.length) {
       list.textContent = "この授業の資料はまだありません。";
       return;
@@ -58,7 +68,7 @@
       remove.textContent = "削除";
       remove.addEventListener("click", async () => {
         await storageApi.deleteObject(storageApi.ref(storage, data.storagePath));
-        await db.collection(`classes/${classId}/files`).doc(item.id).delete();
+        await db.collection(`subjects/${subjectId}/files`).doc(item.id).delete();
         await loadFiles();
       });
       actions.append(download, remove);
@@ -72,15 +82,16 @@
     event.preventDefault();
     const user = getUser();
     const file = fileInput.files?.[0];
-    const classId = classSelect.value;
-    if (!user || !file || !classId) return;
+    const subjectId = classSelect.value;
+    if (!user || !file || !subjectId) return;
     try {
       const fileId = `${Date.now()}_${file.name}`.replace(/[^a-zA-Z0-9._-]/g, "_");
-      const storagePath = `classes/${classId}/files/${fileId}`;
+      const storagePath = `subjects/${subjectId}/files/${fileId}`;
       const storageRef = storageApi.ref(storage, storagePath);
       await storageApi.uploadBytes(storageRef, file, { contentType: file.type || "application/octet-stream" });
       const downloadUrl = await storageApi.getDownloadURL(storageRef);
-      await db.collection(`classes/${classId}/files`).doc(fileId).set({
+      await db.collection(`subjects/${subjectId}/files`).doc(fileId).set({
+        subjectId,
         name: file.name,
         storagePath,
         downloadUrl,
