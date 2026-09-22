@@ -1,6 +1,6 @@
 (function () {
   const { db } = window.studyhubFirebase || {};
-  const words = window.STUDYHUB_LEAP_WORDS || [];
+  let words = window.STUDYHUB_LEAP_WORDS || [];
   const params = new URLSearchParams(window.location.search);
   const mode = params.get("mode") === "ranking" ? "ranking" : "self";
   const start = Number(params.get("start"));
@@ -18,6 +18,21 @@
   let questionIndex = 0;
   let score = 0;
   let answered = false;
+
+  async function loadWords() {
+    try {
+      const response = await fetch("./leap単語.txt");
+      if (!response.ok) return;
+      const text = await response.text();
+      const parsed = text.split(/\r?\n/).map((line) => {
+        const match = line.match(/^\d+\t([^\t]+)\t(.+)$/);
+        return match ? [match[1], match[2]] : null;
+      }).filter(Boolean);
+      if (parsed.length) words = parsed;
+    } catch (error) {
+      console.warn("LEAP単語データの読み込みに失敗しました。", error);
+    }
+  }
 
   function shuffle(items) { return [...items].sort(() => Math.random() - 0.5); }
   function makeQuestion(item, japaneseToEnglish, pool) {
@@ -58,7 +73,11 @@
     const ref = db.collection("leapScores").doc(`${user.uid}_${stage}`);
     const old = await ref.get();
     const oldScore = old.exists ? Number(old.data().score || 0) : 0;
-    if (score > oldScore) await ref.set({ uid: user.uid, stage, score, total: 10, updatedAt: new Date() }, { merge: true });
+    if (score > oldScore) {
+      const profile = await db.collection("users").doc(user.uid).get();
+      const username = profile.exists ? profile.data().username : user.email;
+      await ref.set({ uid: user.uid, username, stage, score, total: 10, updatedAt: new Date() }, { merge: true });
+    }
   }
   async function finishQuiz() {
     questionPanel.hidden = true;
@@ -70,8 +89,10 @@
     if (passed) await saveScore();
   }
   nextButton.addEventListener("click", () => { questionIndex += 1; if (questionIndex >= questions.length) finishQuiz(); else renderQuestion(); });
-  const pool = words.slice(Math.max(0, start - 1), end);
-  if (pool.length < 10) { questionText.textContent = "出題範囲が正しくありません。"; nextButton.hidden = true; return; }
-  questions = makeQuestions(pool);
-  renderQuestion();
+  loadWords().then(() => {
+    const pool = words.slice(Math.max(0, start - 1), end);
+    if (pool.length < 10) { questionText.textContent = "出題範囲が正しくありません。"; nextButton.hidden = true; return; }
+    questions = makeQuestions(pool);
+    renderQuestion();
+  });
 })();
