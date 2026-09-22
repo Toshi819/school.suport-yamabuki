@@ -13,6 +13,8 @@
   const mobilePickerClose = document.getElementById("mobilePickerClose");
   const auth = window.studyhubFirebase?.auth;
   const db = window.studyhubFirebase?.db;
+  const storage = window.studyhubFirebase?.storage;
+  const storageApi = window.studyhubFirebase?.storageApi;
   const getCurrentUser = window.studyhubAuth?.getCurrentUser;
   let subjectCatalog = [];
   let activeMobileSlot = null;
@@ -221,7 +223,8 @@
   }
 
   async function persistScheduleEntry(subject, currentUser, day, period) {
-    await db.collection("classes").doc(`${currentUser.uid}_${day}_${period}`).set({
+    const classId = `${currentUser.uid}_${day}_${period}`;
+    await db.collection("classes").doc(classId).set({
       ownerUid: currentUser.uid,
       subjectId: subject.id,
       name: subject.name,
@@ -233,6 +236,28 @@
       updatedAt: new Date(),
       createdAt: new Date(),
     }, { merge: true });
+
+    if (storage && storageApi) {
+      try {
+        const folderMarker = storageApi.ref(storage, `classes/${classId}/.folder`);
+        await storageApi.uploadBytes(folderMarker, new Blob([""], { type: "text/plain" }), {
+          contentType: "text/plain",
+        });
+      } catch (error) {
+        console.warn("Storage folder marker creation failed:", error);
+      }
+    }
+  }
+
+  async function removeClassFolderMarker(classId) {
+    if (!storage || !storageApi) return;
+    try {
+      await storageApi.deleteObject(storageApi.ref(storage, `classes/${classId}/.folder`));
+    } catch (error) {
+      if (error.code !== "storage/object-not-found") {
+        console.warn("Storage folder marker deletion failed:", error);
+      }
+    }
   }
 
   form.addEventListener("submit", async (event) => {
@@ -266,6 +291,7 @@
 
       for (const existingClass of existingSnapshot.docs) {
         if (!selectedClassIds.has(existingClass.id)) {
+          await removeClassFolderMarker(existingClass.id);
           await db.collection("classes").doc(existingClass.id).delete();
         }
       }

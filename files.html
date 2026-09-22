@@ -19,18 +19,33 @@
       .file-actions { display: flex; gap: 8px; }
       .file-actions a, .file-actions button { border: 1px solid rgba(47, 111, 230, .45); border-radius: 9px; background: #fff; color: var(--navy); padding: 7px 10px; cursor: pointer; text-decoration: none; }
       .file-actions button { border-color: #d95d5d; color: #b64a4a; }
-      @media (max-width: 620px) { .file-row { align-items: flex-start; flex-direction: column; } }
+      .files-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+      .files-header h1 { margin: 0; }
+      .files-header a { white-space: nowrap; }
+      @media (max-width: 620px) {
+        .files-shell { padding: 12px 8px 28px; }
+        .files-card { border-radius: 16px; padding: 14px 12px; }
+        .files-header { align-items: flex-start; flex-direction: column; }
+        .files-header a { width: 100%; text-align: center; }
+        .files-form input, .files-form select { min-height: 48px; }
+        .files-form input[type="file"] { padding: 12px 8px; }
+        .files-form button { width: 100%; min-height: 48px; }
+        .files-form .secondary-btn { display: inline-flex; width: 100%; min-height: 48px; align-items: center; justify-content: center; margin-top: 8px; box-sizing: border-box; }
+        .file-row { align-items: stretch; flex-direction: column; gap: 10px; padding: 14px 0; }
+        .file-actions { display: grid; grid-template-columns: 1fr 1fr; }
+        .file-actions a, .file-actions button { min-height: 44px; display: grid; place-items: center; }
+      }
     </style>
   </head>
   <body>
     <main class="files-shell">
       <section class="files-card">
-        <h1>授業資料</h1>
+        <div class="files-header"><h1>授業資料</h1><a class="secondary-btn" href="./home.html">ホームへ戻る</a></div>
         <p id="filesStatus" class="file-meta">授業を選択してください。</p>
         <form id="filesForm" class="files-form">
           <label>授業<select id="classSelect" required></select></label>
           <label>ファイル<input id="fileInput" type="file" required /></label>
-          <div><button class="primary-btn" type="submit">アップロード</button> <a class="secondary-btn" href="./home.html">ホームへ戻る</a></div>
+          <div><button class="primary-btn" type="submit">アップロード</button></div>
         </form>
         <div id="fileList" class="file-list"></div>
       </section>
