@@ -68,6 +68,39 @@
     return auth?.currentUser || getCurrentUser?.();
   }
 
+  function formatBytes(bytes) {
+    const value = Number(bytes || 0);
+    if (value < 1024) return `${value} B`;
+    if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
+    if (value < 1024 * 1024 * 1024) return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+    return `${(value / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+  }
+
+  function storageMarkup(account) {
+    const used = Number(account.storageUsedBytes || 0);
+    const limit = Number(account.storageLimitBytes || 0);
+    const percentage = limit > 0 ? Math.min(100, (used / limit) * 100) : 0;
+    const level = percentage >= 90 ? "danger" : (percentage >= 70 ? "warning" : "");
+    return `<div class="storage-meta"><strong>${formatBytes(used)} / ${formatBytes(limit)}</strong><div class="account-meta">使用率 ${percentage.toFixed(1)}%</div><div class="storage-bar ${level}" aria-label="使用率 ${percentage.toFixed(1)}%"><span style="width:${percentage}%"></span></div></div>`;
+  }
+
+  async function loadUploadedBytesByUser() {
+    const totals = new Map();
+    const subjects = await db.collection("subjects").get();
+    await Promise.all(subjects.docs.map(async (subject) => {
+      const rootFiles = await db.collection(`subjects/${subject.id}/files`).get();
+      const folders = await db.collection(`subjects/${subject.id}/folders`).get();
+      const folderFiles = await Promise.all(folders.docs.map((folder) => db.collection(`subjects/${subject.id}/folders/${folder.id}/files`).get()));
+      const fileSnapshots = [rootFiles, ...folderFiles];
+      fileSnapshots.forEach((snapshot) => snapshot.docs.forEach((file) => {
+        const data = file.data();
+        if (!data.uploadedBy) return;
+        totals.set(data.uploadedBy, (totals.get(data.uploadedBy) || 0) + Number(data.size || 0));
+      }));
+    }));
+    return totals;
+  }
+
   function subjectId(name, day, period) {
     return `${name}_${day}_${period}`.replace(/[\\/#?\[\]]/g, "_").slice(0, 120);
   }
@@ -153,8 +186,9 @@
 
   async function loadAccounts() {
     const snapshot = await db.collection("users").get();
+    const uploadedBytesByUser = await loadUploadedBytesByUser();
     const accounts = snapshot.docs
-      .map((item) => ({ id: item.id, ...item.data() }))
+      .map((item) => ({ id: item.id, ...item.data(), storageUsedBytes: uploadedBytesByUser.has(item.id) ? uploadedBytesByUser.get(item.id) : Number(item.data().storageUsedBytes || 0) }))
       .sort((left, right) => String(left.userId || left.id).localeCompare(String(right.userId || right.id), "ja"));
 
     accountList.innerHTML = "";
@@ -178,6 +212,7 @@
         element.textContent = value;
         row.appendChild(element);
       });
+      row.insertAdjacentHTML("beforeend", storageMarkup(account));
 
       const resetButton = document.createElement("button");
       resetButton.type = "button";

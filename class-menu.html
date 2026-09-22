@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>StudyHub - 授業メニュー</title>
     <link rel="stylesheet" href="./css/style.css" />
+    <link rel="stylesheet" href="./css/home.css?v=20260922-menu-drawer" />
     <style>
       body { margin: 0; min-height: 100vh; background: #fff; color: #111; }
       .class-menu-shell { max-width: 430px; min-height: 100vh; margin: 0 auto; border: 1px solid #163b63; display: flex; flex-direction: column; }
@@ -42,14 +43,26 @@
         <button id="classMenuButton" class="class-menu-button" type="button" aria-label="メニューを開く"><span></span><span></span><span></span></button>
         <h1 class="class-menu-title" id="classMenuTitle">授業</h1>
       </header>
+      <aside id="classSideMenu" class="side-menu" aria-hidden="true">
+        <div class="side-menu-head">
+          <strong>メニュー</strong>
+          <button id="classCloseMenuButton" type="button" aria-label="メニューを閉じる">×</button>
+        </div>
+        <a href="./verification.html">本人確認</a>
+        <a href="./schedule-plan.html">時間割を変更</a>
+        <a id="classFilesMenuLink" href="./files.html">授業資料</a>
+        <a href="./announcements.html">おしらせ</a>
+        <a href="./report.html">問題を報告</a>
+        <a href="./admin.html">管理者画面</a>
+      </aside>
+      <div id="classMenuBackdrop" class="menu-backdrop" hidden></div>
       <section class="class-menu-main">
         <div class="class-summary"><h1 id="subjectName">授業</h1><p id="subjectDetails">読み込み中...</p></div>
         <nav class="class-menu-links" aria-label="授業メニュー">
           <a id="mapLink" href="./map.html">地図</a>
           <a id="filesLink" href="./files.html">資料</a>
-          <a id="problemLink" href="#">問題</a>
+          <a id="classProblemLink" href="#">授業の問題</a>
           <a id="cardsLink" href="#">単語カード</a>
-          <a href="#">問題</a>
           <a id="memoLink" href="#">メモ</a>
         </nav>
       </section>
@@ -60,7 +73,7 @@
     <script type="module" src="./firebase.js?v=20260922-class-menu1"></script>
     <script type="module" src="./auth.js?v=20260922-class-menu1"></script>
     <script type="module" src="./js/auth/auth-guard.js?v=20260922-class-menu1"></script>
-    <script type="module" src="./js/class-menu.js?v=20260922-class-menu3"></script>
+    <script type="module" src="./js/class-menu.js?v=20260922-class-menu4"></script>
     <script src="./js/version.js?v=20260922"></script>
   </body>
 </html>

@@ -20,6 +20,15 @@
     status.textContent = message;
   }
 
+  async function updateStorageUsage(uid, deltaBytes) {
+    if (!uid || !deltaBytes) return;
+    const userRef = db.collection("users").doc(uid);
+    const snapshot = await userRef.get();
+    if (!snapshot.exists) return;
+    const current = Number(snapshot.data().storageUsedBytes || 0);
+    await userRef.set({ storageUsedBytes: Math.max(0, current + Number(deltaBytes)) }, { merge: true });
+  }
+
   function classLabel(item) {
     return `${item.name || "授業"} / ${item.day || "-"}${item.period || "-"}限`;
   }
@@ -103,6 +112,11 @@
       remove.addEventListener("click", async () => {
         await storageApi.deleteObject(storageApi.ref(storage, data.storagePath));
         await db.collection(filesPath).doc(item.id).delete();
+        try {
+          await updateStorageUsage(data.uploadedBy, -Number(data.size || 0));
+        } catch (usageError) {
+          console.warn("Storage usage sync failed after delete:", usageError);
+        }
         await loadFiles();
       });
       actions.append(download, remove);
@@ -164,6 +178,11 @@
         uploadedBy: user.uid,
         createdAt: new Date(),
       });
+      try {
+        await updateStorageUsage(user.uid, file.size);
+      } catch (usageError) {
+        console.warn("Storage usage sync failed after upload:", usageError);
+      }
       fileInput.value = "";
       showStatus("資料をアップロードしました。");
       await loadFiles();
