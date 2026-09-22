@@ -34,6 +34,11 @@ service cloud.firestore {
         && request.resource.data.ownerUid == resource.data.ownerUid;
     }
 
+    match /classes/{classId}/files/{fileId} {
+      allow read, create, update, delete: if signedIn()
+        && get(/databases/$(database)/documents/classes/$(classId)).data.ownerUid == request.auth.uid;
+    }
+
     match /subjects/{subjectId} {
       allow read: if signedIn();
       allow create, update, delete: if isAdmin();

@@ -1,4 +1,5 @@
 import { getApp, getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject, listAll } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
@@ -48,6 +49,7 @@ import {
     const firestore = initializeFirestore(app, {
       experimentalForceLongPolling: true,
     });
+    const storage = getStorage(app);
 
     const wrapSnapshot = (snapshot) => ({
       id: snapshot.id || "",
@@ -105,6 +107,8 @@ import {
       authInstance,
       authReady,
       firestore,
+      storage,
+      storageApi: { ref, uploadBytes, getDownloadURL, deleteObject, listAll },
       GoogleAuthProvider,
       isFallback: false,
     };

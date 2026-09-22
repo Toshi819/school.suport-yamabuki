@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StudyHub - 資料</title>
+    <link rel="stylesheet" href="./css/style.css" />
+    <link rel="stylesheet" href="./css/auth.css" />
+    <style>
+      body { background: #f3f5f7; }
+      .files-shell { max-width: 720px; margin: 0 auto; padding: 24px 16px 40px; }
+      .files-card { background: #fff; border: 2px solid rgba(22, 59, 99, .8); border-radius: 20px; padding: 20px; }
+      .files-form { display: grid; gap: 12px; margin: 20px 0; }
+      .files-form label { display: grid; gap: 6px; color: var(--navy); font-weight: 700; }
+      .files-form select, .files-form input { min-height: 44px; border: 1px solid rgba(22, 59, 99, .2); border-radius: 10px; padding: 8px 10px; font: inherit; }
+      .file-list { display: grid; gap: 10px; }
+      .file-row { display: flex; justify-content: space-between; gap: 12px; align-items: center; border-bottom: 1px solid rgba(22, 59, 99, .14); padding: 12px 0; }
+      .file-meta { color: var(--muted); font-size: .85rem; }
+      .file-actions { display: flex; gap: 8px; }
+      .file-actions a, .file-actions button { border: 1px solid rgba(47, 111, 230, .45); border-radius: 9px; background: #fff; color: var(--navy); padding: 7px 10px; cursor: pointer; text-decoration: none; }
+      .file-actions button { border-color: #d95d5d; color: #b64a4a; }
+      @media (max-width: 620px) { .file-row { align-items: flex-start; flex-direction: column; } }
+    </style>
+  </head>
+  <body>
+    <main class="files-shell">
+      <section class="files-card">
+        <h1>授業資料</h1>
+        <p id="filesStatus" class="file-meta">授業を選択してください。</p>
+        <form id="filesForm" class="files-form">
+          <label>授業<select id="classSelect" required></select></label>
+          <label>ファイル<input id="fileInput" type="file" required /></label>
+          <div><button class="primary-btn" type="submit">アップロード</button> <a class="secondary-btn" href="./home.html">ホームへ戻る</a></div>
+        </form>
+        <div id="fileList" class="file-list"></div>
+      </section>
+    </main>
+    <script type="module" src="./firebase.js?v=20260922-storage1"></script>
+    <script type="module" src="./auth.js?v=20260922-storage1"></script>
+    <script type="module" src="./js/auth/auth-guard.js?v=20260922-storage1"></script>
+    <script type="module" src="./js/files.js?v=20260922-storage1"></script>
+  </body>
+</html>
