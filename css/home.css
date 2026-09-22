@@ -200,3 +200,20 @@
   margin-top: -24px;
   z-index: 1;
 }
+
+@media (max-width: 620px) {
+  .topbar { padding: 8px 2px 12px; }
+  .brand { font-size: 1.2rem; }
+  .logout-btn { padding: 7px 9px; font-size: .78rem; }
+  .schedule-card { border-radius: 16px; padding: 12px 8px 10px; }
+  .schedule-card h2 { font-size: 1.05rem; margin-bottom: 8px; }
+  .timetable-grid { grid-template-columns: 30px repeat(5, minmax(0, 1fr)); }
+  .cell { min-height: 52px; padding: 3px 1px; }
+  .cell.header { font-size: .75rem; }
+  .cell.period { font-size: .62rem; }
+  .timetable-slot .subject { font-size: .62rem; }
+  .timetable-slot .room { font-size: .5rem; }
+  .bottom-nav { min-height: 58px; margin-top: 12px; }
+  .bottom-nav a { font-size: .65rem; }
+  .bottom-nav .active { width: 72px; height: 72px; margin-top: -20px; }
+}
