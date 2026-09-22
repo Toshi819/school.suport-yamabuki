@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StudyHub - 授業メニュー</title>
+    <link rel="stylesheet" href="./css/style.css" />
+    <style>
+      body { margin: 0; min-height: 100vh; background: #fff; color: #111; }
+      .class-menu-shell { max-width: 430px; min-height: 100vh; margin: 0 auto; border: 1px solid #163b63; display: flex; flex-direction: column; }
+      .class-menu-head { display: flex; align-items: center; gap: 24px; padding: 18px 16px 10px; }
+      .class-menu-button { border: 0; background: transparent; cursor: pointer; padding: 0; display: grid; gap: 5px; }
+      .class-menu-button span { width: 38px; height: 5px; background: #111; display: block; }
+      .class-menu-title { margin: 0; font-size: 1.2rem; font-weight: 400; }
+      .class-menu-main { flex: 1; padding: 18px 74px 90px; }
+      .class-summary { text-align: center; margin-bottom: 16px; }
+      .class-summary h1 { margin: 0 0 6px; font-size: 1.35rem; font-weight: 400; }
+      .class-summary p { margin: 0; color: #555; font-size: .85rem; }
+      .class-menu-links { display: grid; gap: 0; }
+      .class-menu-links a { display: block; border-bottom: 2px solid #0871a7; color: #111; text-align: center; padding: 13px 4px; font-size: 1.15rem; text-decoration: none; }
+      .class-bottom-nav { display: grid; grid-template-columns: repeat(5, 1fr); min-height: 58px; border-top: 1px solid #111; margin-top: auto; position: relative; }
+      .class-bottom-nav a { display: grid; place-items: center; color: #111; border-right: 1px solid #111; font-size: .8rem; text-decoration: none; }
+      .class-bottom-nav a:last-child { border-right: 0; }
+      .class-bottom-nav .active { position: relative; width: 78px; height: 78px; margin: -25px auto 0; border: 2px solid #8f4612; border-radius: 50%; background: #f2762b; color: #fff; font-size: 1rem; z-index: 1; }
+      @media (min-width: 700px) { .class-menu-shell { margin-top: 24px; min-height: 720px; } }
+    </style>
+  </head>
+  <body>
+    <main class="class-menu-shell">
+      <header class="class-menu-head">
+        <button id="classMenuButton" class="class-menu-button" type="button" aria-label="メニューを開く"><span></span><span></span><span></span></button>
+        <h1 class="class-menu-title" id="classMenuTitle">授業</h1>
+      </header>
+      <section class="class-menu-main">
+        <div class="class-summary"><h1 id="subjectName">授業</h1><p id="subjectDetails">読み込み中...</p></div>
+        <nav class="class-menu-links" aria-label="授業メニュー">
+          <a id="mapLink" href="./map.html">地図</a>
+          <a id="filesLink" href="./files.html">資料</a>
+          <a href="#">赤シート</a>
+          <a href="#">単語カード</a>
+          <a href="#">問題</a>
+          <a href="#">メモ</a>
+        </nav>
+      </section>
+      <nav class="class-bottom-nav" aria-label="メインメニュー">
+        <a href="./map.html">地図</a><a href="#">赤シート</a><a class="active" href="./home.html">授業</a><a href="#">カード</a><a href="#">ファイル</a>
+      </nav>
+    </main>
+    <script type="module" src="./firebase.js?v=20260922-class-menu1"></script>
+    <script type="module" src="./auth.js?v=20260922-class-menu1"></script>
+    <script type="module" src="./js/auth/auth-guard.js?v=20260922-class-menu1"></script>
+    <script type="module" src="./js/class-menu.js?v=20260922-class-menu1"></script>
+  </body>
+</html>

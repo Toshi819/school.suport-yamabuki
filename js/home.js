@@ -75,6 +75,20 @@
         cell.className = `cell timetable-slot ${subject ? "filled" : ""}`;
         cell.dataset.day = day;
         cell.dataset.period = String(period);
+        if (subject) {
+          cell.tabIndex = 0;
+          cell.setAttribute("role", "link");
+          const openClassMenu = () => {
+            window.location.href = `./class-menu.html?classId=${encodeURIComponent(subject.id)}`;
+          };
+          cell.addEventListener("click", openClassMenu);
+          cell.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              openClassMenu();
+            }
+          });
+        }
 
         if (subject) {
           cell.innerHTML = `
