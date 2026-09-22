@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StudyHub - 単語カード</title>
+  <link rel="stylesheet" href="./css/style.css">
+  <style>
+    body{background:#f3f5f7}.cards-shell{max-width:680px;margin:auto;padding:16px 10px 40px}.cards-card{background:#fff;border:2px solid rgba(22,59,99,.8);border-radius:18px;padding:20px}.cards-card h1{color:var(--navy);margin:0 0 6px}.cards-subtitle{color:var(--muted);margin:0 0 20px}.cards-actions{display:grid;gap:12px}.cards-actions a{display:grid;gap:4px;padding:16px;border:1px solid rgba(47,111,230,.35);border-radius:10px;background:#f8fbff;color:var(--navy);text-decoration:none}.cards-actions strong{font-size:1.05rem}.cards-actions span{color:var(--muted);font-size:.9rem}.cards-link{display:block;margin-top:18px;text-align:center;color:var(--navy)}
+  </style>
+</head>
+<body>
+  <main class="cards-shell"><section class="cards-card">
+    <h1>単語カード</h1>
+    <p id="cardsSubject" class="cards-subtitle">読み込み中...</p>
+    <div class="cards-actions">
+      <a id="solveCards" href="#"><strong>単語カードを解く</strong><span>作成したカードをめくって学習する</span></a>
+      <a id="createCards" href="#"><strong>単語カードの作成</strong><span>カードの表と裏を登録する</span></a>
+    </div>
+    <a id="backToClass" class="cards-link" href="./home.html">授業メニューへ戻る</a>
+  </section></main>
+  <script type="module" src="./firebase.js?v=20260922-cards1"></script>
+  <script type="module" src="./auth.js?v=20260922-cards1"></script>
+  <script type="module" src="./js/auth/auth-guard.js?v=20260922-cards1"></script>
+  <script type="module" src="./js/cards.js?v=20260922-cards1"></script>
+</body>
+</html>
