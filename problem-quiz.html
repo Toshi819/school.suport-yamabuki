@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StudyHub - 問題に挑戦</title>
+  <link rel="stylesheet" href="./css/style.css">
+  <style>
+    body{background:#f3f5f7}.quiz-shell{min-height:100vh;display:grid;place-items:center;padding:16px 10px}.quiz-card{width:min(680px,100%);background:#fff;border:2px solid rgba(22,59,99,.8);border-radius:18px;padding:20px}.quiz-card h1{color:var(--navy);margin-top:0}.quiz-panel{display:grid;gap:16px}.quiz-panel[hidden]{display:none}.progress{color:var(--muted);line-height:1.6}.choice-list{display:grid;gap:10px}.choice{min-height:54px;border:1px solid rgba(22,59,99,.2);border-radius:10px;background:#fff;text-align:left;padding:12px;font:inherit;cursor:pointer}.choice.correct{background:#c9ebc9}.choice.wrong{background:#f6c4c4}.choice:disabled{cursor:default}.result-pass{color:#197a35}.result-fail{color:#b64a4a}
+  </style>
+</head>
+<body>
+  <main class="quiz-shell"><section class="quiz-card" aria-label="問題出題">
+    <section id="questionPanel" class="quiz-panel">
+      <p id="questionProgress" class="progress"></p>
+      <h1 id="questionText"></h1>
+      <div id="choices" class="choice-list"></div>
+      <button id="nextButton" class="primary-btn" type="button" hidden>次の問題</button>
+    </section>
+    <section id="resultPanel" class="quiz-panel" hidden>
+      <h1 id="resultTitle"></h1>
+      <p id="resultScore"></p>
+      <a class="secondary-btn" href="./problem.html">モード選択へ戻る</a>
+    </section>
+  </section></main>
+  <script src="./js/leap-data.js?v=20260922-leap3"></script>
+  <script type="module" src="./firebase.js?v=20260922-leap3"></script>
+  <script type="module" src="./auth.js?v=20260922-leap3"></script>
+  <script type="module" src="./js/auth/auth-guard.js?v=20260922-leap3"></script>
+  <script type="module" src="./js/problem-quiz.js?v=20260922-leap3"></script>
+</body>
+</html>

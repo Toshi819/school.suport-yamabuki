@@ -1,9 +1,44 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>StudyHub - 問題</title>
-<link rel="stylesheet" href="./css/style.css">
-<style>
-body{background:#f3f5f7}.problem-shell{max-width:680px;margin:auto;padding:18px 12px 40px}.problem-card{background:#fff;border:2px solid rgba(22,59,99,.8);border-radius:18px;padding:18px}.problem-card h1{margin-top:0;color:var(--navy)}.problem-form,.question-panel{display:grid;gap:14px;margin-top:18px}.problem-form label{display:grid;gap:6px;color:var(--navy);font-weight:700}.problem-form select{min-height:46px;border:1px solid rgba(22,59,99,.2);border-radius:10px;padding:8px;font:inherit}.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mode-grid button{min-height:70px;border:1px solid rgba(47,111,230,.35);border-radius:12px;background:#f8fbff;color:var(--navy);font-weight:700;cursor:pointer}.choice{min-height:48px;border:1px solid rgba(22,59,99,.2);border-radius:10px;background:#fff;text-align:left;padding:10px;cursor:pointer}.choice.correct{background:#c9ebc9}.choice.wrong{background:#f6c4c4}.progress{color:var(--muted)}.rankings{display:grid;gap:8px}.rank-row{display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #dfe7f6}@media(max-width:620px){.problem-shell{padding:10px 8px}.problem-card{padding:14px}.mode-grid{grid-template-columns:1fr}.mode-grid button{min-height:56px}}
-</style></head>
-<body><main class="problem-shell"><section class="problem-card"><h1>問題</h1><p id="problemMessage" class="progress">教材とモードを選択してください。</p><form id="problemSetup" class="problem-form"><label>教材<select id="leapMaterial"><option value="leap">英単語LEAP</option></select></label><div id="modeGrid" class="mode-grid"><button type="button" data-mode="self">自己学習</button><button type="button" data-mode="ranking">ランキング</button></div><label id="stageWrap" hidden>ステージ<select id="stageSelect"></select></label><button id="startButton" class="primary-btn" type="submit" hidden>開始する</button></form><section id="questionPanel" class="question-panel" hidden><div id="questionProgress" class="progress"></div><h2 id="questionText"></h2><div id="choices"></div><button id="nextButton" class="primary-btn" type="button" hidden>次の問題</button></section><section id="resultPanel" hidden><h2 id="resultTitle"></h2><p id="resultScore"></p><div id="rankingPanel" class="rankings"></div><button id="restartButton" class="secondary-btn" type="button">もう一度</button></section><p><a class="secondary-btn" href="./home.html">ホームへ戻る</a></p></section></main><script src="./js/leap-data.js?v=20260922-leap1"></script><script type="module" src="./firebase.js?v=20260922-leap1"></script><script type="module" src="./auth.js?v=20260922-leap1"></script><script type="module" src="./js/auth/auth-guard.js?v=20260922-leap1"></script><script type="module" src="./js/problem.js?v=20260922-leap1"></script><script src="./js/version.js?v=20260922"></script></body></html>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StudyHub - 問題</title>
+  <link rel="stylesheet" href="./css/style.css">
+  <style>
+    body{background:#f3f5f7}.problem-shell{max-width:680px;margin:auto;padding:16px 10px 40px}.problem-card{background:#fff;border:2px solid rgba(22,59,99,.8);border-radius:18px;padding:18px}.problem-card h1{color:var(--navy);margin-top:0}.problem-panel{display:grid;gap:14px}.problem-panel[hidden]{display:none}.problem-panel label{display:grid;gap:6px;color:var(--navy);font-weight:700}.problem-panel input{min-height:46px;border:1px solid rgba(22,59,99,.2);border-radius:10px;padding:8px;font:inherit}.mode-buttons,.problem-buttons,.stage-list,.rankings{display:grid;gap:10px}.mode-buttons{grid-template-columns:1fr 1fr}.mode-button,.stage-list button{min-height:52px;border:1px solid rgba(47,111,230,.35);border-radius:10px;background:#f8fbff;color:var(--navy);font-weight:700;cursor:pointer}.mode-button.active{background:var(--navy);color:#fff}.rank-row{display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #dfe7f6}.progress,.problem-note{color:var(--muted);line-height:1.6}.secondary-link{display:block;margin-top:18px;color:var(--navy);text-align:center}@media(max-width:620px){.problem-shell{padding:10px 8px}.problem-card{padding:14px}}
+  </style>
+</head>
+<body>
+  <main class="problem-shell"><section class="problem-card">
+    <h1>問題</h1>
+    <p id="problemMessage" class="problem-note">モードを選択してください。</p>
+    <div class="mode-buttons" role="group" aria-label="問題モード">
+      <button id="selfModeButton" class="mode-button active" type="button">自己学習</button>
+      <button id="rankingModeButton" class="mode-button" type="button">ランキング</button>
+    </div>
+    <section id="selfPanel" class="problem-panel">
+      <h2>自己学習</h2>
+      <label>開始単語番号<input id="selfStartWord" type="number" min="1" value="1"></label>
+      <label>終了単語番号<input id="selfEndWord" type="number" min="10" value="100"></label>
+      <button id="selfStart" class="primary-btn" type="button">この範囲で開始</button>
+    </section>
+    <section id="rankingPanel" class="problem-panel" hidden>
+      <h2>ランキング</h2>
+      <p class="progress">ステージごとに10問出題します。</p>
+      <p id="totalScore">合計スコア: 読み込み中...</p>
+      <button id="rankingView" class="secondary-btn" type="button">ランキングを見る</button>
+      <div id="stageList" class="stage-list"></div>
+      <div id="rankingList" class="rankings"></div>
+      <div id="nearbyList" class="rankings"></div>
+    </section>
+    <a class="secondary-link" href="./home.html">ホームへ戻る</a>
+  </section></main>
+  <script src="./js/leap-data.js?v=20260922-leap3"></script>
+  <script type="module" src="./firebase.js?v=20260922-leap3"></script>
+  <script type="module" src="./auth.js?v=20260922-leap3"></script>
+  <script type="module" src="./js/auth/auth-guard.js?v=20260922-leap3"></script>
+  <script type="module" src="./js/problem.js?v=20260922-leap3"></script>
+  <script src="./js/version.js?v=20260922"></script>
+</body>
+</html>
