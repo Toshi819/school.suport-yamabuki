@@ -1,12 +1,15 @@
 (function () {
   const { auth, db, storage, storageApi } = window.studyhubFirebase || {};
   const classSelect = document.getElementById("classSelect");
+  const folderSelect = document.getElementById("folderSelect");
+  const createFolderButton = document.getElementById("createFolderButton");
   const fileInput = document.getElementById("fileInput");
   const form = document.getElementById("filesForm");
   const list = document.getElementById("fileList");
   const status = document.getElementById("filesStatus");
   const requestedSubjectId = new URLSearchParams(window.location.search).get("subjectId") || "";
   let classes = [];
+  let folders = [];
 
   function getUser() {
     return auth?.currentUser || null;
@@ -51,9 +54,11 @@
 
   async function loadFiles() {
     const subjectId = classSelect.value;
+    const folderId = folderSelect.value || "root";
     list.innerHTML = "";
     if (!subjectId) return;
-    const snapshot = await db.collection(`subjects/${subjectId}/files`).get();
+    const filesPath = folderId === "root" ? `subjects/${subjectId}/files` : `subjects/${subjectId}/folders/${folderId}/files`;
+    const snapshot = await db.collection(filesPath).get();
     if (!snapshot.docs.length) {
       list.textContent = "この授業の資料はまだありません。";
       return;
@@ -76,7 +81,7 @@
       remove.textContent = "削除";
       remove.addEventListener("click", async () => {
         await storageApi.deleteObject(storageApi.ref(storage, data.storagePath));
-        await db.collection(`subjects/${subjectId}/files`).doc(item.id).delete();
+        await db.collection(filesPath).doc(item.id).delete();
         await loadFiles();
       });
       actions.append(download, remove);
@@ -85,20 +90,44 @@
     });
   }
 
-  classSelect.addEventListener("change", loadFiles);
+  async function loadFolders() {
+    const subjectId = classSelect.value;
+    folderSelect.innerHTML = "";
+    folderSelect.add(new Option("ルート（未分類）", "root"));
+    if (!subjectId) return;
+    const snapshot = await db.collection(`subjects/${subjectId}/folders`).get();
+    folders = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+    folders.forEach((folder) => folderSelect.add(new Option(folder.name || folder.id, folder.id)));
+  }
+
+  classSelect.addEventListener("change", async () => { await loadFolders(); await loadFiles(); });
+  folderSelect.addEventListener("change", loadFiles);
+  createFolderButton.addEventListener("click", async () => {
+    const subjectId = classSelect.value;
+    if (!subjectId) return;
+    const name = window.prompt("フォルダー名を入力してください");
+    if (!name?.trim()) return;
+    const folderId = `${Date.now()}_${name}`.replace(/[^a-zA-Z0-9._-]/g, "_");
+    await db.collection(`subjects/${subjectId}/folders`).doc(folderId).set({ name: name.trim(), createdAt: new Date(), createdBy: getUser()?.uid || "" });
+    await loadFolders();
+    folderSelect.value = folderId;
+    await loadFiles();
+  });
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const user = getUser();
     const file = fileInput.files?.[0];
     const subjectId = classSelect.value;
+    const folderId = folderSelect.value || "root";
     if (!user || !file || !subjectId) return;
     try {
       const fileId = `${Date.now()}_${file.name}`.replace(/[^a-zA-Z0-9._-]/g, "_");
-      const storagePath = `subjects/${subjectId}/files/${fileId}`;
+      const storagePath = folderId === "root" ? `subjects/${subjectId}/files/${fileId}` : `subjects/${subjectId}/folders/${folderId}/files/${fileId}`;
       const storageRef = storageApi.ref(storage, storagePath);
       await storageApi.uploadBytes(storageRef, file, { contentType: file.type || "application/octet-stream" });
       const downloadUrl = await storageApi.getDownloadURL(storageRef);
-      await db.collection(`subjects/${subjectId}/files`).doc(fileId).set({
+      const filesPath = folderId === "root" ? `subjects/${subjectId}/files` : `subjects/${subjectId}/folders/${folderId}/files`;
+      await db.collection(filesPath).doc(fileId).set({
         subjectId,
         name: file.name,
         storagePath,
@@ -124,6 +153,7 @@
       return;
     }
     await loadClasses(user);
+    await loadFolders();
   })().catch((error) => {
     console.error(error);
     showStatus("資料画面の読み込みに失敗しました。");
