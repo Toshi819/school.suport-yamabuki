@@ -44,6 +44,16 @@ button, input {
 }
 
 .card {
+  
+  .app-version {
+    position: fixed;
+    right: 10px;
+    bottom: 6px;
+    z-index: 5;
+    color: rgba(22, 59, 99, 0.55);
+    font-size: 0.68rem;
+    pointer-events: none;
+  }
   background: var(--card);
   border-radius: 20px;
   box-shadow: var(--shadow);

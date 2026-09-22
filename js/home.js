@@ -15,6 +15,19 @@
   let currentUser = null;
   let timetableData = {};
 
+  function categoryClass(category) {
+    const classes = {
+      "数学": "category-math",
+      "国語": "category-japanese",
+      "科学": "category-science",
+      "社会": "category-social",
+      "英語": "category-english",
+      "情報": "category-information",
+      "その他": "category-other",
+    };
+    return classes[category] || classes["その他"];
+  }
+
   function setMenuOpen(isOpen) {
     sideMenu?.classList.toggle("open", isOpen);
     sideMenu?.setAttribute("aria-hidden", String(!isOpen));
@@ -72,7 +85,8 @@
         const cell = document.createElement("div");
         const subject = timetableData?.[day]?.[period];
 
-        cell.className = `cell timetable-slot ${subject ? "filled" : ""}`;
+        const subjectCategoryClass = subject ? categoryClass(subject.category || "その他") : "";
+        cell.className = `cell timetable-slot ${subject ? "filled" : ""} ${subjectCategoryClass}`;
         cell.dataset.day = day;
         cell.dataset.period = String(period);
         if (subject) {
@@ -131,13 +145,20 @@
 
     if (db && auth) {
       try {
+        const subjectSnapshot = await db.collection("subjects").get();
+        const subjectMap = new Map(subjectSnapshot.docs.map((docSnap) => [docSnap.id, docSnap.data()]));
         const querySnapshot = await db.collection("classes").where("ownerUid", "==", user.uid).get();
         querySnapshot.forEach((docSnap) => {
           const data = docSnap.data();
+          const subjectInfo = subjectMap.get(data.subjectId);
           const day = data.day;
           const period = Number(data.period);
           if (dayNames.includes(day) && periods.includes(period)) {
-            grid[day][period] = { id: docSnap.id, ...data };
+            grid[day][period] = {
+              id: docSnap.id,
+              ...data,
+              category: data.category || subjectInfo?.category || "その他",
+            };
           }
         });
         timetableData = grid;

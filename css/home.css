@@ -143,6 +143,14 @@
   border-style: solid;
 }
 
+.timetable-slot.filled.category-math { background: #13a5d1; }
+.timetable-slot.filled.category-japanese { background: #f6c4c4; color: var(--navy); }
+.timetable-slot.filled.category-science { background: #c9ebc9; color: var(--navy); }
+.timetable-slot.filled.category-social { background: #f7d2a8; color: var(--navy); }
+.timetable-slot.filled.category-english { background: #9ed9b0; color: var(--navy); }
+.timetable-slot.filled.category-information { background: #b9dcf7; color: var(--navy); }
+.timetable-slot.filled.category-other { background: #fff1b8; color: var(--navy); }
+
 .timetable-slot .subject {
   font-size: 0.7rem;
   line-height: 1.2;

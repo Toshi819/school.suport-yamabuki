@@ -228,6 +228,7 @@
       ownerUid: currentUser.uid,
       subjectId: subject.id,
       name: subject.name,
+      category: subject.category || "その他",
       teacher: subject.teacher || "",
       room: subject.room || "",
       floor: Number(subject.floor || 0),
