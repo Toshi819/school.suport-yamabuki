@@ -23,6 +23,14 @@
   async function loadClasses(user) {
     const snapshot = await db.collection("classes").where("ownerUid", "==", user.uid).get();
     classes = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+    const subjectIds = new Set(classes.map((item) => item.subjectId).filter(Boolean));
+    for (const subjectId of subjectIds) {
+      await db.collection("classMembers").doc(`${subjectId}_${user.uid}`).set({
+        subjectId,
+        uid: user.uid,
+        updatedAt: new Date(),
+      }, { merge: true });
+    }
     classSelect.innerHTML = "";
     const uniqueClasses = new Map();
     classes.forEach((item) => {
