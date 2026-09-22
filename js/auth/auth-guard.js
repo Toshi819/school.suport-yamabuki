@@ -24,7 +24,7 @@
     if (isLoggedIn && window.studyhubAuth?.getUserProfile) {
       try {
         const profile = await window.studyhubAuth.getUserProfile(user.uid);
-        if (profile?.role === "admin" && currentPage !== "admin.html") {
+        if (profile?.role === "admin" && !["admin.html", "report.html"].includes(currentPage)) {
           window.location.replace("./admin.html");
           return;
         }

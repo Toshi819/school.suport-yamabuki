@@ -29,7 +29,15 @@
       status.textContent = "問題報告を送信しました。";
     } catch (error) {
       console.error(error);
-      status.textContent = "送信に失敗しました。";
+      status.textContent = error.code === "permission-denied"
+        ? "送信権限がありません。Firestoreルールを公開してください。"
+        : "送信に失敗しました。もう一度お試しください。";
     }
   });
+
+  if (window.studyhubFirebase?.authReady) {
+    window.studyhubFirebase.authReady.then((user) => {
+      if (!user) window.location.replace("./index.html");
+    });
+  }
 })();
