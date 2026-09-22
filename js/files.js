@@ -1,6 +1,7 @@
 (function () {
   const { auth, db, storage, storageApi } = window.studyhubFirebase || {};
   const classSelect = document.getElementById("classSelect");
+  const classFolderList = document.getElementById("classFolderList");
   const folderSelect = document.getElementById("folderSelect");
   const createFolderButton = document.getElementById("createFolderButton");
   const fileInput = document.getElementById("fileInput");
@@ -28,11 +29,15 @@
     classes = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
     const subjectIds = new Set(classes.map((item) => item.subjectId).filter(Boolean));
     for (const subjectId of subjectIds) {
-      await db.collection("classMembers").doc(`${subjectId}_${user.uid}`).set({
-        subjectId,
-        uid: user.uid,
-        updatedAt: new Date(),
-      }, { merge: true });
+      try {
+        await db.collection("classMembers").doc(`${subjectId}_${user.uid}`).set({
+          subjectId,
+          uid: user.uid,
+          updatedAt: new Date(),
+        }, { merge: true });
+      } catch (error) {
+        console.warn("Class membership sync failed:", error);
+      }
     }
     classSelect.innerHTML = "";
     const uniqueClasses = new Map();
@@ -41,6 +46,21 @@
       if (!uniqueClasses.has(subjectId)) uniqueClasses.set(subjectId, { ...item, id: subjectId });
     });
     classes = [...uniqueClasses.values()];
+    classFolderList.innerHTML = "";
+    classes.forEach((item) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "class-folder-card";
+      button.innerHTML = `<strong>${item.name || "授業"}</strong><small>${item.day || "-"}${item.period || "-"}限</small>`;
+      button.addEventListener("click", async () => {
+        classSelect.value = item.id;
+        document.querySelectorAll(".class-folder-card").forEach((card) => card.classList.remove("active"));
+        button.classList.add("active");
+        await loadFolders();
+        await loadFiles();
+      });
+      classFolderList.appendChild(button);
+    });
     classes.forEach((item) => classSelect.add(new Option(classLabel(item), item.id)));
     if (!classes.length) {
       showStatus("時間割に登録された授業がありません。");
@@ -49,6 +69,7 @@
     if (requestedSubjectId && classes.some((item) => item.id === requestedSubjectId)) {
       classSelect.value = requestedSubjectId;
     }
+    await loadFolders();
     await loadFiles();
   }
 
@@ -108,10 +129,16 @@
     const name = window.prompt("フォルダー名を入力してください");
     if (!name?.trim()) return;
     const folderId = `${Date.now()}_${name}`.replace(/[^a-zA-Z0-9._-]/g, "_");
-    await db.collection(`subjects/${subjectId}/folders`).doc(folderId).set({ name: name.trim(), createdAt: new Date(), createdBy: getUser()?.uid || "" });
-    await loadFolders();
-    folderSelect.value = folderId;
-    await loadFiles();
+    try {
+      await db.collection(`subjects/${subjectId}/folders`).doc(folderId).set({ name: name.trim(), createdAt: new Date(), createdBy: getUser()?.uid || "" });
+      await loadFolders();
+      folderSelect.value = folderId;
+      await loadFiles();
+      showStatus("教材フォルダーを作成しました。");
+    } catch (error) {
+      console.error(error);
+      showStatus(error.code === "permission-denied" ? "権限がありません。firestore.rulesを公開してください。" : "フォルダー作成に失敗しました。");
+    }
   });
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -153,7 +180,6 @@
       return;
     }
     await loadClasses(user);
-    await loadFolders();
   })().catch((error) => {
     console.error(error);
     showStatus("資料画面の読み込みに失敗しました。");
