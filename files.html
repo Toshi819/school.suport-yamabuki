@@ -13,6 +13,13 @@
       .files-form { display: grid; gap: 12px; margin: 20px 0; }
       .files-form label { display: grid; gap: 6px; color: var(--navy); font-weight: 700; }
       .files-form select, .files-form input { min-height: 44px; border: 1px solid rgba(22, 59, 99, .2); border-radius: 10px; padding: 8px 10px; font: inherit; }
+      .upload-card { display: grid; gap: 14px; background: linear-gradient(180deg, #f9fbff 0%, #edf5ff 100%); border: 1px solid rgba(22, 59, 99, .12); border-radius: 18px; padding: 14px; }
+      .upload-card-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+      .upload-card-title { font-weight: 800; color: var(--navy); }
+      .quick-select-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 54px; border-radius: 14px; border: 2px dashed rgba(47, 111, 230, .5); background: rgba(255,255,255,.7); color: var(--navy); font-weight: 700; cursor: pointer; }
+      .quick-select-btn input { display: none; }
+      .upload-meta { display: flex; flex-wrap: wrap; gap: 8px; }
+      .upload-chip { display: inline-flex; align-items: center; padding: 8px 10px; border-radius: 999px; background: #fff; border: 1px solid rgba(22, 59, 99, .12); color: var(--navy); font-size: .8rem; }
       .file-list { display: grid; gap: 10px; }
       .class-folders { display: grid; gap: 10px; margin: 18px 0; }
       .class-folder-card { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px; border: 1px solid rgba(22, 59, 99, .16); border-radius: 12px; background: #f8fbff; color: var(--navy); cursor: pointer; text-align: left; }
@@ -20,27 +27,49 @@
       .class-folder-card small { color: var(--muted); }
       .folder-tools { display: flex; gap: 8px; align-items: end; }
       .folder-tools label { flex: 1; }
-      .file-row { display: flex; justify-content: space-between; gap: 12px; align-items: center; border-bottom: 1px solid rgba(22, 59, 99, .14); padding: 12px 0; }
+      .file-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: start; border: 1px solid rgba(22, 59, 99, .12); border-radius: 12px; padding: 10px; background: #fff; }
       .file-meta { color: var(--muted); font-size: .85rem; }
-      .file-actions { display: flex; gap: 8px; }
+      .file-preview { width: min(100%, 260px); margin: 8px 0 0; border-radius: 10px; overflow: hidden; border: 1px solid rgba(22, 59, 99, .12); background: #f7faff; }
+      .file-preview img, .file-preview video { display: block; width: 100%; max-height: 200px; object-fit: contain; background: #eef5ff; }
+      .file-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
       .file-actions a, .file-actions button { border: 1px solid rgba(47, 111, 230, .45); border-radius: 9px; background: #fff; color: var(--navy); padding: 7px 10px; cursor: pointer; text-decoration: none; }
       .file-actions button { border-color: #d95d5d; color: #b64a4a; }
+      .file-viewer-modal { position: fixed; inset: 0; background: rgba(9, 18, 32, 0.72); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 2000; }
+      .file-viewer-modal.visible { display: flex; }
+      .file-viewer-panel { position: relative; width: min(92vw, 960px); max-height: 88vh; background: #fff; border-radius: 16px; padding: 12px; box-sizing: border-box; border: 2px solid rgba(22, 59, 99, .18); }
+      .file-viewer-close { position: absolute; top: 8px; right: 10px; border: none; background: #eef4ff; color: var(--navy); border-radius: 999px; width: 32px; height: 32px; cursor: pointer; font-size: 1.1rem; }
+      .file-viewer-content { display: flex; align-items: center; justify-content: center; min-height: 230px; margin-top: 18px; overflow: auto; }
+      .file-viewer-content img, .file-viewer-content video, .file-viewer-content iframe { max-width: 100%; max-height: 70vh; border: none; border-radius: 12px; background: #f5f8ff; transition: transform 0.15s ease; transform-origin: center center; }
+      .file-viewer-content iframe { width: 100%; min-height: 68vh; }
+      .file-viewer-content img, .file-viewer-content video { width: 100%; height: auto; max-height: 80vh; }
+      .file-viewer-toolbar { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+      .file-viewer-toolbar button { border: 1px solid rgba(22, 59, 99, .18); background: #f6f9ff; color: var(--navy); border-radius: 999px; padding: 7px 10px; cursor: pointer; }
       .files-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
       .files-header h1 { margin: 0; }
       .files-header a { white-space: nowrap; }
       @media (max-width: 800px) {
         .files-shell { padding: 12px 8px 28px; }
-        .files-card { border-radius: 16px; padding: 14px 12px; }
+        .files-card { border-radius: 18px; padding: 14px 12px; }
         .files-header { align-items: flex-start; flex-direction: column; }
         .files-header a { width: 100%; text-align: center; }
-        .files-form input, .files-form select { min-height: 48px; }
-        .files-form input[type="file"] { padding: 12px 8px; }
-        .files-form button { width: 100%; min-height: 48px; }
-        .files-form .secondary-btn { display: inline-flex; width: 100%; min-height: 48px; align-items: center; justify-content: center; margin-top: 8px; box-sizing: border-box; }
-        .file-row { align-items: stretch; flex-direction: column; gap: 10px; padding: 14px 0; }
-        .class-folder-card { min-height: 54px; }
-        .file-actions { display: grid; grid-template-columns: 1fr 1fr; }
-        .file-actions a, .file-actions button { min-height: 44px; display: grid; place-items: center; }
+        .files-form input, .files-form select { min-height: 52px; font-size: 16px; }
+        .files-form input[type="file"] { padding: 12px 10px; }
+        .files-form button { width: 100%; min-height: 52px; }
+        .files-form .secondary-btn { display: inline-flex; width: 100%; min-height: 52px; align-items: center; justify-content: center; margin-top: 8px; box-sizing: border-box; }
+        .folder-tools { display: grid; gap: 10px; }
+        .folder-tools label { width: 100%; }
+        .file-row { grid-template-columns: 1fr; gap: 8px; padding: 8px 8px; }
+        .file-preview { width: 100%; margin-top: 6px; }
+        .class-folder-card { min-height: 52px; }
+        .file-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+        .file-actions a, .file-actions button { min-height: 42px; display: grid; place-items: center; width: 100%; }
+        .file-viewer-panel { padding: 10px; width: min(100vw, 960px); max-height: 100vh; border-radius: 0; }
+        .file-viewer-close { top: 8px; right: 10px; width: 32px; height: 32px; }
+        .file-viewer-toolbar { margin-top: 6px; }
+        .file-viewer-toolbar button { min-width: 42px; min-height: 42px; }
+        .file-viewer-content { min-height: 200px; margin-top: 20px; align-items: stretch; }
+        .file-viewer-content img, .file-viewer-content video { width: 100vw; max-width: 100vw; max-height: 75vh; border-radius: 0; }
+        .file-viewer-content iframe { min-height: 75vh; border-radius: 0; }
       }
     </style>
   </head>
@@ -51,18 +80,36 @@
         <p id="filesStatus" class="file-meta">授業を選択してください。</p>
         <div id="classFolderList" class="class-folders"></div>
         <form id="filesForm" class="files-form">
-          <label>授業<select id="classSelect" required></select></label>
-          <div class="folder-tools"><label>教材フォルダー<select id="folderSelect"></select></label><button id="createFolderButton" class="secondary-btn" type="button">新規フォルダー</button></div>
-          <label>ファイル<input id="fileInput" type="file" required /></label>
-          <div><button class="primary-btn" type="submit">アップロード</button></div>
+          <div class="upload-card">
+            <div class="upload-card-header"><span class="upload-card-title">資料を追加</span><span class="upload-chip" id="uploadSummary">授業未選択</span></div>
+            <label class="quick-select-btn" for="fileInput">ファイルを選ぶ<input id="fileInput" type="file" multiple required /></label>
+            <div class="upload-meta">
+              <span class="upload-chip" id="selectedClassChip">授業: なし</span>
+              <span class="upload-chip" id="selectedFolderChip">フォルダー: ルート</span>
+            </div>
+            <label>授業<select id="classSelect" required></select></label>
+            <div class="folder-tools"><label>教材フォルダー<select id="folderSelect"></select></label><button id="createFolderButton" class="secondary-btn" type="button">新規フォルダー</button></div>
+            <div><button class="primary-btn" type="submit">まとめてアップロード</button></div>
+          </div>
         </form>
         <div id="fileList" class="file-list"></div>
       </section>
     </main>
-    <script type="module" src="./firebase.js?v=20260922-storage2"></script>
-    <script type="module" src="./auth.js?v=20260922-storage2"></script>
-    <script type="module" src="./js/auth/auth-guard.js?v=20260922-storage2"></script>
-    <script type="module" src="./js/files.js?v=20260922-folders2"></script>
-    <script src="./js/version.js?v=20260922"></script>
+    <div id="fileViewerModal" class="file-viewer-modal" aria-hidden="true">
+      <div class="file-viewer-panel" role="dialog" aria-modal="true" aria-label="資料プレビュー">
+        <button id="fileViewerClose" class="file-viewer-close" type="button" aria-label="閉じる">×</button>
+        <div id="fileViewerToolbar" class="file-viewer-toolbar" hidden>
+          <button id="fileViewerZoomOut" type="button">-</button>
+          <button id="fileViewerZoomReset" type="button">100%</button>
+          <button id="fileViewerZoomIn" type="button">+</button>
+        </div>
+        <div id="fileViewerContent" class="file-viewer-content"></div>
+      </div>
+    </div>
+    <script type="module" src="./firebase.js?v=20260923-fileviewer"></script>
+    <script type="module" src="./auth.js?v=20260923-fileviewer"></script>
+    <script type="module" src="./js/auth/auth-guard.js?v=20260923-fileviewer"></script>
+    <script type="module" src="./js/files.js?v=20260923-files-entry-mode4"></script>
+    <script src="./js/version.js?v=20260923-fileviewer"></script>
   </body>
 </html>

@@ -48,7 +48,7 @@
     title.textContent = label;
     headerTitle.textContent = label;
     details.textContent = `${data.day || ""}${data.period || ""}限 / ${data.room || "教室未設定"}`;
-    filesLink.href = `./files.html?subjectId=${encodeURIComponent(data.subjectId || classId)}`;
+    filesLink.href = `./files.html?from=class-menu&classId=${encodeURIComponent(classId)}&subjectId=${encodeURIComponent(data.subjectId || classId)}`;
     classFilesMenuLink.href = filesLink.href;
     classProblemLink.href = `./class-problem.html?${classQuery(data.subjectId)}`;
     cardsLink.href = `./cards.html?${classQuery(data.subjectId)}`;

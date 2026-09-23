@@ -244,11 +244,12 @@
       resetButton.type = "button";
       resetButton.className = "reset-btn";
       resetButton.textContent = "再設定メール";
-      resetButton.disabled = !account.email;
+      resetButton.disabled = account.provider === "google.com" || !(account.schoolEmail || account.email);
       resetButton.addEventListener("click", async () => {
         try {
-          await sendUserPasswordReset(account.email);
-          showStatus(`${account.email} に再設定メールを送信しました。`);
+          const targetEmail = account.schoolEmail || account.email;
+          await sendUserPasswordReset(targetEmail);
+          showStatus(`${targetEmail} に再設定メールを送信しました。`);
         } catch (error) {
           console.error(error);
           showStatus("再設定メールの送信に失敗しました。");

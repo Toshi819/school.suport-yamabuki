@@ -50,8 +50,13 @@
       const existingSnapshot = await db.collection("users").doc(user.uid).get();
       const existingProfile = existingSnapshot.exists ? existingSnapshot.data() : {};
       const verificationStatus = existingProfile.verificationStatus === "verified" ? "verified" : "submitted";
+      const schoolEmail = document.getElementById("schoolEmail").value.trim();
+      if (user.providerData?.[0]?.providerId === "password" && schoolEmail !== user.email && window.studyhubFirebase?.auth?.updateEmail) {
+        await window.studyhubFirebase.auth.updateEmail(user, schoolEmail);
+      }
       await db.collection("users").doc(user.uid).set({
-        schoolEmail: document.getElementById("schoolEmail").value.trim(),
+        schoolEmail,
+        email: user.providerData?.[0]?.providerId === "password" ? schoolEmail : existingProfile.email || user.email || "",
         fullName: document.getElementById("fullName").value.trim(),
         studentNumber: document.getElementById("studentNumber").value.trim(),
         verificationStatus,
@@ -59,7 +64,7 @@
         verificationSubmittedAt: new Date(),
         updatedAt: new Date(),
       }, { merge: true });
-      status.textContent = "本人確認情報を保存しました。";
+      status.textContent = "本人確認情報を保存しました。再設定メールは登録した学校メールアドレスに送られます。";
       if (limitText) limitText.textContent = "現在の資料保存上限: 50MB（確認待ち）";
     } catch (error) {
       console.error(error);

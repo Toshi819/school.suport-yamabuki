@@ -145,19 +145,16 @@
 
     if (db && auth) {
       try {
-        const subjectSnapshot = await db.collection("subjects").get();
-        const subjectMap = new Map(subjectSnapshot.docs.map((docSnap) => [docSnap.id, docSnap.data()]));
         const querySnapshot = await db.collection("classes").where("ownerUid", "==", user.uid).get();
         querySnapshot.forEach((docSnap) => {
           const data = docSnap.data();
-          const subjectInfo = subjectMap.get(data.subjectId);
           const day = data.day;
           const period = Number(data.period);
           if (dayNames.includes(day) && periods.includes(period)) {
             grid[day][period] = {
               id: docSnap.id,
               ...data,
-              category: data.category || subjectInfo?.category || "その他",
+              category: data.category || "その他",
             };
           }
         });
@@ -183,10 +180,20 @@
 
   const bootUser = getResolvedCurrentUser();
   if (bootUser) {
-    currentUser = bootUser;
-    timetableData = buildEmptyTimetable();
-    renderTimetable();
-    loadTimetable();
+    const authReady = window.studyhubFirebase?.authReady;
+    if (authReady) {
+      authReady.then((authenticatedUser) => {
+        currentUser = authenticatedUser || bootUser;
+        timetableData = buildEmptyTimetable();
+        renderTimetable();
+        return loadTimetable();
+      }).catch((error) => console.warn("Firebase auth readiness failed:", error));
+    } else {
+      currentUser = bootUser;
+      timetableData = buildEmptyTimetable();
+      renderTimetable();
+      loadTimetable();
+    }
     return;
   }
 

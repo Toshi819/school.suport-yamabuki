@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="./css/home.css?v=20260922-menu-drawer" />
     <style>
       body { margin: 0; min-height: 100vh; background: #fff; color: #111; }
-      .class-menu-shell { max-width: 430px; min-height: 100vh; margin: 0 auto; border: 1px solid #163b63; display: flex; flex-direction: column; }
+      .class-menu-shell { max-width: 430px; min-height: 100vh; margin: 0 auto; border: 0; display: flex; flex-direction: column; }
       .class-menu-head { display: flex; align-items: center; gap: 24px; padding: 18px 16px 10px; }
       .class-menu-button { border: 0; background: transparent; cursor: pointer; padding: 0; display: grid; gap: 5px; }
       .class-menu-button span { width: 38px; height: 5px; background: #111; display: block; }
@@ -18,9 +18,9 @@
       .class-summary h1 { margin: 0 0 6px; font-size: 1.35rem; font-weight: 400; }
       .class-summary p { margin: 0; color: #555; font-size: .85rem; }
       .class-menu-links { display: grid; gap: 0; }
-      .class-menu-links a { display: block; border-bottom: 2px solid #0871a7; color: #111; text-align: center; padding: 13px 4px; font-size: 1.15rem; text-decoration: none; }
-      .class-bottom-nav { display: grid; grid-template-columns: repeat(5, 1fr); min-height: 58px; border-top: 1px solid #111; margin-top: auto; position: relative; }
-      .class-bottom-nav a { display: grid; place-items: center; color: #111; border-right: 1px solid #111; font-size: .8rem; text-decoration: none; }
+      .class-menu-links a { display: block; border-bottom: 1px solid rgba(8, 113, 167, .42); color: #111; text-align: center; padding: 13px 4px; font-size: 1.15rem; text-decoration: none; }
+      .class-bottom-nav { display: grid; grid-template-columns: repeat(5, 1fr); min-height: 58px; border-top: 1px solid rgba(17, 17, 17, .34); margin-top: auto; position: relative; }
+      .class-bottom-nav a { display: grid; place-items: center; color: #111; border-right: 1px solid rgba(17, 17, 17, .28); font-size: .8rem; text-decoration: none; }
       .class-bottom-nav a:last-child { border-right: 0; }
       .class-bottom-nav .active { position: relative; width: 78px; height: 78px; margin: -25px auto 0; border: 2px solid #8f4612; border-radius: 50%; background: #f2762b; color: #fff; font-size: 1rem; z-index: 1; }
       @media (max-width: 620px) {
@@ -34,7 +34,68 @@
         .class-bottom-nav a { font-size: .68rem; }
         .class-bottom-nav .active { width: 70px; height: 70px; margin-top: -20px; }
       }
-      @media (min-width: 700px) { .class-menu-shell { margin-top: 24px; min-height: 720px; } }
+      @media (min-width: 900px) {
+        body { background: #eef3f7; }
+        .class-menu-shell {
+          max-width: 1120px;
+          min-height: calc(100vh - 48px);
+          margin: 24px auto;
+          border: 1px solid rgba(22, 59, 99, .18);
+          border-radius: 20px;
+          overflow: hidden;
+          background: #fff;
+          box-shadow: 0 18px 44px rgba(22, 59, 99, .12);
+        }
+        .class-menu-head {
+          gap: 24px;
+          padding: 24px 42px;
+          border-bottom: 1px solid rgba(22, 59, 99, .12);
+          background: #fbfdff;
+        }
+        .class-menu-button { padding: 8px 4px; }
+        .class-menu-button span { width: 30px; height: 4px; }
+        .class-menu-title { font-size: 1.15rem; font-weight: 700; color: #163b63; }
+        .class-menu-main {
+          display: grid;
+          grid-template-columns: minmax(280px, .72fr) minmax(520px, 1.28fr);
+          align-items: center;
+          gap: 72px;
+          padding: 76px 88px 100px;
+        }
+        .class-summary { text-align: left; margin: 0; }
+        .class-summary h1 { margin-bottom: 14px; font-size: clamp(2rem, 3vw, 3rem); font-weight: 800; line-height: 1.15; color: #163b63; }
+        .class-summary p { font-size: 1rem; color: #607286; }
+        .class-menu-links { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+        .class-menu-links a {
+          min-height: 116px;
+          box-sizing: border-box;
+          display: flex;
+          align-items: flex-end;
+          padding: 22px 24px;
+          border: 1px solid rgba(22, 59, 99, .11);
+          border-left: 5px solid #0871a7;
+          border-radius: 10px;
+          background: #f7fbfe;
+          text-align: left;
+          font-size: 1.15rem;
+          font-weight: 700;
+          transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+        }
+        .class-menu-links a:hover,
+        .class-menu-links a:focus-visible {
+          background: #eaf5fb;
+          box-shadow: 0 8px 18px rgba(22, 59, 99, .1);
+          transform: translateY(-2px);
+          outline: none;
+        }
+        .class-menu-links a:nth-child(2) { border-left-color: #2d9b75; }
+        .class-menu-links a:nth-child(3) { border-left-color: #d28b3d; }
+        .class-menu-links a:nth-child(4) { border-left-color: #7b6ac8; }
+        .class-menu-links a:nth-child(5) { border-left-color: #d45d70; }
+        .class-bottom-nav { min-height: 68px; border-top: 1px solid rgba(22, 59, 99, .18); }
+        .class-bottom-nav a { font-size: .85rem; }
+        .class-bottom-nav .active { width: 86px; height: 86px; margin-top: -28px; }
+      }
     </style>
   </head>
   <body>
@@ -73,7 +134,7 @@
     <script type="module" src="./firebase.js?v=20260922-class-menu1"></script>
     <script type="module" src="./auth.js?v=20260922-class-menu1"></script>
     <script type="module" src="./js/auth/auth-guard.js?v=20260922-class-menu1"></script>
-    <script type="module" src="./js/class-menu.js?v=20260922-class-menu4"></script>
+    <script type="module" src="./js/class-menu.js?v=20260923-class-menu6"></script>
     <script src="./js/version.js?v=20260922"></script>
   </body>
 </html>

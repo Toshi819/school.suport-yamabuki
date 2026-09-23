@@ -276,7 +276,7 @@
 
   async function loginWithEmail(username, password) {
     const safeUsername = String(username || "").trim();
-    const email = toEmail(safeUsername);
+    const email = safeUsername.includes("@") ? safeUsername : toEmail(safeUsername);
 
     if (useRemoteBackend) {
       try {
@@ -363,6 +363,14 @@
     return auth.sendPasswordResetEmail(email);
   }
 
+  async function requestPasswordReset(usernameOrEmail) {
+    const value = String(usernameOrEmail || "").trim();
+    if (!value || !useRemoteBackend) throw new Error("ユーザー名またはメールアドレスを入力してください");
+    if (!value.includes("@")) throw new Error("本人確認で登録した学校メールアドレスを入力してください");
+    await sendUserPasswordReset(value);
+    return value;
+  }
+
   async function importSubjectsFromCsv(rows = []) {
     const normalizedRows = rows
       .filter((subject) => subject && (subject.name || subject.subjectName) && subject.day && Number.isFinite(Number(subject.period)))
@@ -417,6 +425,7 @@
     isAdmin,
     getStorageLimitBytes,
     sendUserPasswordReset,
+    requestPasswordReset,
     registerWithEmail,
     loginWithEmail,
     loginWithGoogle,

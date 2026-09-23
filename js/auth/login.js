@@ -1,9 +1,10 @@
 (function () {
-  const { loginWithEmail, loginWithGoogle } = window.studyhubAuth || {};
+  const { loginWithEmail, loginWithGoogle, requestPasswordReset } = window.studyhubAuth || {};
   if (!loginWithEmail || !loginWithGoogle) return;
 
   const loginBtn = document.getElementById("loginBtn");
   const googleLoginBtn = document.getElementById("googleLoginBtn");
+  const passwordResetBtn = document.getElementById("passwordResetBtn");
 
   async function redirectAfterLogin(user) {
     const uid = user?.uid;
@@ -51,4 +52,19 @@
       }
     });
   }
+
+  passwordResetBtn?.addEventListener("click", async () => {
+    const email = document.getElementById("resetEmail")?.value.trim();
+    if (!email) {
+      alert("再設定用の学校メールアドレスを入力してください");
+      return;
+    }
+    try {
+      const targetEmail = await requestPasswordReset(email);
+      alert(`${targetEmail} に再設定メールを送信しました。`);
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "再設定メールの送信に失敗しました。");
+    }
+  });
 })();

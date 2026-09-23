@@ -10,6 +10,7 @@ import {
   signInWithPopup,
   signInWithRedirect,
   signOut,
+  updateEmail,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   collection,
@@ -95,6 +96,7 @@ import {
       signInWithEmailAndPassword: (email, password) => signInWithEmailAndPassword(authInstance, email, password),
       signInWithPopup: (provider) => signInWithPopup(authInstance, provider),
       signInWithRedirect: (provider) => signInWithRedirect(authInstance, provider),
+      updateEmail: (user, email) => updateEmail(user, email),
       sendPasswordResetEmail: (email) => sendPasswordResetEmail(authInstance, email),
       onAuthStateChanged: (callback) => onAuthStateChanged(authInstance, callback),
       signOut: () => signOut(authInstance),
