@@ -28,8 +28,9 @@
       .edit-btn { border: 1px solid rgba(47, 111, 230, 0.5); color: var(--navy); background: #fff; border-radius: 10px; padding: 8px 12px; cursor: pointer; }
       #adminSecondDayField[hidden] { display: none !important; }
       .account-section { margin-top: 32px; padding-top: 20px; border-top: 2px solid rgba(22, 59, 99, 0.12); }
-      .account-row { display: grid; grid-template-columns: 1.1fr 1.2fr 1.2fr .8fr 1.2fr auto; gap: 12px; align-items: center; border-bottom: 1px solid rgba(22, 59, 99, 0.14); padding: 12px 0; }
+      .account-row { display: grid; grid-template-columns: 1fr 1.1fr 1.2fr .8fr 1.5fr 1.2fr auto; gap: 12px; align-items: center; border-bottom: 1px solid rgba(22, 59, 99, 0.14); padding: 12px 0; }
       .account-meta { color: var(--muted); font-size: 0.82rem; overflow-wrap: anywhere; }
+      .verification-meta { min-width: 190px; }
       .storage-meta { min-width: 150px; }
       .storage-bar { height: 7px; margin-top: 5px; overflow: hidden; border-radius: 999px; background: #e4ebf4; }
       .storage-bar span { display: block; height: 100%; border-radius: inherit; background: #2f6fe6; }
@@ -87,7 +88,7 @@
           <h2>アカウント管理</h2>
           <p class="note">パスワードは表示せず、必要な場合は本人のメールアドレスへ再設定メールを送信します。</p>
           <p class="note">保存容量はアップロードした授業資料の合計です。</p>
-          <div class="account-row account-header" aria-hidden="true"><strong>ID / 権限</strong><strong>ユーザー名</strong><strong>メール</strong><strong>登録方法</strong><strong>資料容量（使用量 / 上限）</strong><span>操作</span></div>
+          <div class="account-row account-header" aria-hidden="true"><strong>ID / 権限</strong><strong>ユーザー名</strong><strong>メール</strong><strong>登録方法</strong><strong>本人確認</strong><strong>資料容量（使用量 / 上限）</strong><span>操作</span></div>
           <div id="adminAccountList" class="subject-list"></div>
         </section>
         <section id="adminReportsPanel" class="admin-panel account-section" hidden>
@@ -102,6 +103,6 @@
     <script type="module" src="./firebase.js?v=20260923-auth-email"></script>
     <script type="module" src="./auth.js?v=20260923-auth-email"></script>
     <script type="module" src="./js/auth/auth-guard.js?v=20260922-cleanup"></script>
-    <script type="module" src="./js/admin.js?v=20260923-school-email-reset"></script>
+    <script type="module" src="./js/admin.js?v=20260923-verification-details"></script>
   </body>
 </html>

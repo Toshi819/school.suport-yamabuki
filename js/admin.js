@@ -91,6 +91,25 @@
     return `<div class="storage-meta"><strong>${formatBytes(used)} / ${formatBytes(limit)}</strong><div class="account-meta">使用率 ${percentage.toFixed(1)}%</div><div class="storage-bar ${level}" aria-label="使用率 ${percentage.toFixed(1)}%"><span style="width:${percentage}%"></span></div></div>`;
   }
 
+  function verificationElement(account) {
+    const container = document.createElement("div");
+    container.className = "verification-meta";
+    const statusLabels = { verified: "確認済み", submitted: "確認申請中", unverified: "未確認" };
+    const status = document.createElement("strong");
+    status.textContent = `状態: ${statusLabels[account.verificationStatus] || "未確認"}`;
+    const email = document.createElement("div");
+    email.className = "account-meta";
+    email.textContent = `学校メール: ${account.schoolEmail || "未登録"}`;
+    const name = document.createElement("div");
+    name.className = "account-meta";
+    name.textContent = `氏名: ${account.fullName || "未登録"}`;
+    const studentNumber = document.createElement("div");
+    studentNumber.className = "account-meta";
+    studentNumber.textContent = `学籍番号: ${account.studentNumber || "未登録"}`;
+    container.append(status, email, name, studentNumber);
+    return container;
+  }
+
   async function loadUploadedBytesByUser() {
     const totals = new Map();
     const subjects = await db.collection("subjects").get();
@@ -219,6 +238,7 @@
         element.textContent = value;
         row.appendChild(element);
       });
+      row.appendChild(verificationElement(account));
       row.insertAdjacentHTML("beforeend", storageMarkup(account));
       const actions = document.createElement("div");
       actions.className = "account-actions";
