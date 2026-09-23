@@ -24,6 +24,10 @@
     if (menuBackdrop) menuBackdrop.hidden = !isOpen;
   }
 
+  function classQuery(subjectId) {
+    return `classId=${encodeURIComponent(classId)}&subjectId=${encodeURIComponent(subjectId || classId)}`;
+  }
+
   menuButton?.addEventListener("click", () => setMenuOpen(true));
   closeMenuButton?.addEventListener("click", () => setMenuOpen(false));
   menuBackdrop?.addEventListener("click", () => setMenuOpen(false));
@@ -46,10 +50,10 @@
     details.textContent = `${data.day || ""}${data.period || ""}限 / ${data.room || "教室未設定"}`;
     filesLink.href = `./files.html?subjectId=${encodeURIComponent(data.subjectId || classId)}`;
     classFilesMenuLink.href = filesLink.href;
-    classProblemLink.href = `./class-problem.html?classId=${encodeURIComponent(classId)}`;
-    cardsLink.href = `./cards.html?classId=${encodeURIComponent(classId)}`;
-    bottomCardsLink.href = `./cards.html?classId=${encodeURIComponent(classId)}`;
-    memoLink.href = `./memo.html?classId=${encodeURIComponent(classId)}`;
+    classProblemLink.href = `./class-problem.html?${classQuery(data.subjectId)}`;
+    cardsLink.href = `./cards.html?${classQuery(data.subjectId)}`;
+    bottomCardsLink.href = `./cards.html?${classQuery(data.subjectId)}`;
+    memoLink.href = `./memo.html?${classQuery(data.subjectId)}`;
     bottomProblemLink.href = "./problem.html";
   }
 

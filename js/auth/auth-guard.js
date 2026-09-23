@@ -10,6 +10,16 @@
     return localStorage.getItem(`studyhub_schedule_fixed_${user.uid}`) === "true";
   }
 
+  function updateAdminMenuVisibility(profile) {
+    const adminLinks = document.querySelectorAll('a[href="./admin.html"]');
+    const isAdminUser = !!profile && profile.role === "admin";
+    adminLinks.forEach((link) => {
+      link.hidden = !isAdminUser;
+      link.style.display = isAdminUser ? "" : "none";
+      link.setAttribute("aria-hidden", String(!isAdminUser));
+    });
+  }
+
   async function evaluateAccess(user) {
     const isLoggedIn = !!user;
 
@@ -24,13 +34,23 @@
     if (isLoggedIn && window.studyhubAuth?.getUserProfile) {
       try {
         profile = await window.studyhubAuth.getUserProfile(user.uid);
+        updateAdminMenuVisibility(profile);
         if (profile?.role === "admin" && !["admin.html", "report.html"].includes(currentPage)) {
           window.location.replace("./admin.html");
           return;
         }
+        if (profile && profile.role !== "admin" && currentPage === "admin.html") {
+          window.location.replace("./home.html");
+          return;
+        }
       } catch (error) {
         console.warn("Admin role lookup failed:", error);
+        updateAdminMenuVisibility(null);
       }
+    }
+
+    if (!isLoggedIn) {
+      updateAdminMenuVisibility(null);
     }
 
     const scheduleFixed = hasFixedSchedule(user) || profile?.scheduleFixed === true;

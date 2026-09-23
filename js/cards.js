@@ -1,6 +1,7 @@
 (function () {
   const { auth, db } = window.studyhubFirebase || {};
   const classId = new URLSearchParams(window.location.search).get("classId") || "";
+  const requestedSubjectId = new URLSearchParams(window.location.search).get("subjectId") || "";
   const subject = document.getElementById("cardsSubject");
   const solveLink = document.getElementById("solveCards");
   const createLink = document.getElementById("createCards");
@@ -13,7 +14,8 @@
     if (!snapshot.exists || snapshot.data().ownerUid !== user.uid) { window.location.replace("./home.html"); return; }
     const data = snapshot.data();
     subject.textContent = `${data.name || "授業"} / ${data.day || ""}${data.period || ""}限`;
-    const query = `?classId=${encodeURIComponent(classId)}`;
+    const subjectId = requestedSubjectId || data.subjectId || classId;
+    const query = `?classId=${encodeURIComponent(classId)}&subjectId=${encodeURIComponent(subjectId)}`;
     solveLink.href = `./cards-solve.html${query}`;
     createLink.href = `./cards-create.html${query}`;
     backLink.href = `./class-menu.html${query}`;

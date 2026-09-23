@@ -1,6 +1,7 @@
 (function () {
   const { auth, db } = window.studyhubFirebase || {};
   const classId = new URLSearchParams(window.location.search).get("classId") || "";
+  const requestedSubjectId = new URLSearchParams(window.location.search).get("subjectId") || "";
   const subject = document.getElementById("memoSubject");
   const text = document.getElementById("memoText");
   const status = document.getElementById("memoStatus");
@@ -9,6 +10,7 @@
   const backLink = document.getElementById("backToClass");
   let user;
   let memoRef;
+  let groupId = "";
 
   function setStatus(message) {
     status.textContent = message;
@@ -25,11 +27,22 @@
       return;
     }
     const classData = classSnapshot.data();
+    groupId = requestedSubjectId || classData.subjectId || classId;
     subject.textContent = `${classData.name || "授業"} / ${classData.day || ""}${classData.period || ""}限`;
-    backLink.href = `./class-menu.html?classId=${encodeURIComponent(classId)}`;
-    memoRef = db.collection("classMemos").doc(`${classId}_${user.uid}`);
+    backLink.href = `./class-menu.html?classId=${encodeURIComponent(classId)}&subjectId=${encodeURIComponent(groupId)}`;
+    memoRef = db.collection("classMemos").doc(`${groupId}_${user.uid}`);
     const memoSnapshot = await memoRef.get();
-    if (memoSnapshot.exists) text.value = memoSnapshot.data().text || "";
+    if (memoSnapshot.exists) {
+      text.value = memoSnapshot.data().text || "";
+    } else if (groupId !== classId) {
+      const classList = await db.collection("classes").where("ownerUid", "==", user.uid).get();
+      const relatedIds = classList.docs
+        .filter((item) => item.data().subjectId === groupId)
+        .map((item) => item.id);
+      const legacySnapshots = await Promise.all([...new Set([classId, ...relatedIds])].map((id) => db.collection("classMemos").doc(`${id}_${user.uid}`).get()));
+      const legacyMemo = legacySnapshots.find((item) => item.exists);
+      if (legacyMemo) text.value = legacyMemo.data().text || "";
+    }
     setStatus("");
   }
   saveButton.addEventListener("click", async () => {
@@ -37,7 +50,7 @@
     saveButton.disabled = true;
     setStatus("保存中...");
     try {
-      await memoRef.set({ classId, ownerUid: user.uid, text: text.value, updatedAt: new Date() }, { merge: true });
+      await memoRef.set({ classId: groupId, ownerUid: user.uid, text: text.value, updatedAt: new Date() }, { merge: true });
       setStatus("保存しました");
     } catch (error) {
       console.error(error);

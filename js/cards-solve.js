@@ -1,6 +1,7 @@
 (function () {
   const { auth, db } = window.studyhubFirebase || {};
   const classId = new URLSearchParams(window.location.search).get("classId") || "";
+  const requestedSubjectId = new URLSearchParams(window.location.search).get("subjectId") || "";
   const subject = document.getElementById("solveSubject");
   const progress = document.getElementById("cardProgress");
   const flashcard = document.getElementById("flashcard");
@@ -11,8 +12,14 @@
   let cards = [];
   let index = 0;
   let showingBack = false;
+  let groupId = "";
+  let cardClassIds = [];
 
-  function cardQuery(user) { return db.collection("classCards").where("classId", "==", classId).where("ownerUid", "==", user.uid); }
+  async function loadCardClassIds(user) {
+    const snapshot = await db.collection("classes").where("ownerUid", "==", user.uid).get();
+    const related = snapshot.docs.filter((item) => item.data().subjectId === groupId);
+    cardClassIds = [...new Set([classId, groupId, ...related.map((item) => item.id)])];
+  }
   function renderCard() {
     if (!cards.length) {
       progress.textContent = "";
@@ -36,10 +43,12 @@
     const classSnapshot = await db.collection("classes").doc(classId).get();
     if (!classSnapshot.exists || classSnapshot.data().ownerUid !== user.uid) { window.location.replace("./home.html"); return; }
     const data = classSnapshot.data();
+    groupId = requestedSubjectId || data.subjectId || classId;
+    await loadCardClassIds(user);
     subject.textContent = `${data.name || "授業"} / ${data.day || ""}${data.period || ""}限`;
-    backLink.href = `./cards.html?classId=${encodeURIComponent(classId)}`;
-    const snapshot = await cardQuery(user).get();
-    cards = snapshot.docs.map((doc) => doc.data());
+    backLink.href = `./cards.html?classId=${encodeURIComponent(classId)}&subjectId=${encodeURIComponent(groupId)}`;
+    const snapshots = await Promise.all(cardClassIds.map((id) => db.collection("classCards").where("classId", "==", id).where("ownerUid", "==", user.uid).get()));
+    cards = snapshots.flatMap((snapshot) => snapshot.docs.map((doc) => doc.data()));
     renderCard();
   }
   flipButton.addEventListener("click", () => {

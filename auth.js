@@ -286,6 +286,7 @@
           email,
           provider: "password",
         });
+        setCurrentUser({ ...userCredential.user, ...profile });
         return { user: userCredential.user, profile };
       } catch (error) {
         console.warn("Firebase email login failed, falling back to local storage.", error);

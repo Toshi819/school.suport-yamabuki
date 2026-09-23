@@ -1,6 +1,7 @@
 (function () {
   const { auth, db } = window.studyhubFirebase || {};
   const classId = new URLSearchParams(window.location.search).get("classId") || "";
+  const requestedSubjectId = new URLSearchParams(window.location.search).get("subjectId") || "";
   const subject = document.getElementById("problemSubject");
   const questionPanel = document.getElementById("questionPanel");
   const resultPanel = document.getElementById("resultPanel");
@@ -17,6 +18,8 @@
   let index = 0;
   let score = 0;
   let answered = false;
+  let groupId = "";
+  let cardClassIds = [];
 
   function shuffle(items) { return [...items].sort(() => Math.random() - 0.5); }
   function makeQuestions() {
@@ -67,12 +70,16 @@
     const classSnapshot = await db.collection("classes").doc(classId).get();
     if (!classSnapshot.exists || classSnapshot.data().ownerUid !== user.uid) { window.location.replace("./home.html"); return; }
     const classData = classSnapshot.data();
+    groupId = requestedSubjectId || classData.subjectId || classId;
+    const classIdsSnapshot = await db.collection("classes").where("ownerUid", "==", user.uid).get();
+    const relatedClasses = classIdsSnapshot.docs.filter((item) => item.data().subjectId === groupId);
+    cardClassIds = [...new Set([classId, groupId, ...relatedClasses.map((item) => item.id)])];
     subject.textContent = `${classData.name || "授業"} / ${classData.day || ""}${classData.period || ""}限`;
-    const classMenuUrl = `./class-menu.html?classId=${encodeURIComponent(classId)}`;
+    const classMenuUrl = `./class-menu.html?classId=${encodeURIComponent(classId)}&subjectId=${encodeURIComponent(groupId)}`;
     backLink.href = classMenuUrl;
     backDuringQuiz.href = classMenuUrl;
-    const cardSnapshot = await db.collection("classCards").where("classId", "==", classId).where("ownerUid", "==", user.uid).get();
-    cards = cardSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })).filter((card) => card.front && card.back);
+    const cardSnapshots = await Promise.all(cardClassIds.map((id) => db.collection("classCards").where("classId", "==", id).where("ownerUid", "==", user.uid).get()));
+    cards = cardSnapshots.flatMap((snapshot) => snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))).filter((card) => card.front && card.back);
     if (cards.length < 4) { showNoCards("4択問題には単語カードが4枚以上必要です。先に単語カードを作成してください。"); return; }
     makeQuestions();
     renderQuestion();
