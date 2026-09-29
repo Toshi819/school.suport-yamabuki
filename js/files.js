@@ -14,10 +14,19 @@
   let classes = [];
   let folders = [];
   const fileViewerModal = document.getElementById("fileViewerModal");
+  const fileViewerPanel = document.querySelector(".file-viewer-panel");
   const fileViewerContent = document.getElementById("fileViewerContent");
   const fileViewerClose = document.getElementById("fileViewerClose");
   const fileViewerToolbar = document.getElementById("fileViewerToolbar");
   const fileViewerZoomIn = document.getElementById("fileViewerZoomIn");
+   const fileViewerRotateLeft = document.getElementById("fileViewerRotateLeft");
+   const fileViewerRotateRight = document.getElementById("fileViewerRotateRight");
+   const fileViewerRotateReset = document.getElementById("fileViewerRotateReset");
+  const fileViewerFit = document.getElementById("fileViewerFit");
+  const fileViewerFullscreen = document.getElementById("fileViewerFullscreen");
+  const fileViewerDownload = document.getElementById("fileViewerDownload");
+  const fileViewerTitle = document.getElementById("fileViewerTitle");
+  const fileViewerMeta = document.getElementById("fileViewerMeta");
   const fileViewerZoomOut = document.getElementById("fileViewerZoomOut");
   const fileViewerZoomReset = document.getElementById("fileViewerZoomReset");
   const uploadSummary = document.getElementById("uploadSummary");
@@ -25,6 +34,7 @@
   const selectedFolderChip = document.getElementById("selectedFolderChip");
   let currentViewerZoom = 1;
   let currentViewerMedia = null;
+   let currentViewerRotation = 0;
 
   if (fromClassMenu) {
     classFolderList.hidden = true;
@@ -150,8 +160,37 @@
   function applyViewerZoom(zoom) {
     currentViewerZoom = Math.min(2.5, Math.max(0.6, zoom));
     if (!currentViewerMedia) return;
-    currentViewerMedia.style.transform = `scale(${currentViewerZoom})`;
+     currentViewerMedia.style.transform = `scale(${currentViewerZoom}) rotate(${currentViewerRotation}deg)`;
     fileViewerZoomReset.textContent = `${Math.round(currentViewerZoom * 100)}%`;
+  }
+
+   function applyViewerRotation(rotation) {
+     currentViewerRotation = ((rotation % 360) + 360) % 360;
+     if (!currentViewerMedia) return;
+     currentViewerMedia.style.transform = `scale(${currentViewerZoom}) rotate(${currentViewerRotation}deg)`;
+   }
+
+  function autoOrientViewerMedia() {
+    if (!currentViewerMedia || !window.matchMedia("(min-width: 801px)").matches) return;
+    const orient = (width, height) => {
+      if (width > 0 && height > width && currentViewerRotation === 0) {
+        applyViewerRotation(90);
+      }
+    };
+    if (currentViewerMedia.tagName === "IMG") {
+      if (currentViewerMedia.complete) {
+        orient(currentViewerMedia.naturalWidth, currentViewerMedia.naturalHeight);
+      } else {
+        currentViewerMedia.addEventListener("load", () => orient(currentViewerMedia.naturalWidth, currentViewerMedia.naturalHeight), { once: true });
+      }
+    }
+    if (currentViewerMedia.tagName === "VIDEO") {
+      if (currentViewerMedia.readyState >= 1) {
+        orient(currentViewerMedia.videoWidth, currentViewerMedia.videoHeight);
+      } else {
+        currentViewerMedia.addEventListener("loadedmetadata", () => orient(currentViewerMedia.videoWidth, currentViewerMedia.videoHeight), { once: true });
+      }
+    }
   }
 
   function openFileViewer(data) {
@@ -167,12 +206,17 @@
       content = `<iframe src="${fileUrl}" title="${data.name || "資料"}"></iframe>`;
     }
     fileViewerContent.innerHTML = content;
-    currentViewerMedia = fileViewerContent.querySelector("img, video") || null;
+    currentViewerMedia = fileViewerContent.querySelector("img, video, iframe") || null;
     currentViewerZoom = 1;
+    currentViewerRotation = 0;
+    fileViewerTitle.textContent = data.name || "資料プレビュー";
+    fileViewerMeta.textContent = `${contentType || "形式不明"} / ${Math.ceil(Number(data.size || 0) / 1024)}KB`;
+    fileViewerDownload.href = fileUrl;
     if (currentViewerMedia) {
       currentViewerMedia.style.transform = "scale(1)";
       fileViewerToolbar.hidden = false;
       fileViewerZoomReset.textContent = "100%";
+      autoOrientViewerMedia();
     } else {
       fileViewerToolbar.hidden = true;
     }
@@ -187,6 +231,7 @@
     fileViewerToolbar.hidden = true;
     currentViewerMedia = null;
     currentViewerZoom = 1;
+    currentViewerRotation = 0;
   }
 
   async function loadFiles() {
@@ -266,6 +311,22 @@
   fileViewerZoomIn.addEventListener("click", () => applyViewerZoom(currentViewerZoom + 0.2));
   fileViewerZoomOut.addEventListener("click", () => applyViewerZoom(currentViewerZoom - 0.2));
   fileViewerZoomReset.addEventListener("click", () => applyViewerZoom(1));
+   fileViewerRotateLeft.addEventListener("click", () => applyViewerRotation(currentViewerRotation - 90));
+   fileViewerRotateRight.addEventListener("click", () => applyViewerRotation(currentViewerRotation + 90));
+   fileViewerRotateReset.addEventListener("click", () => applyViewerRotation(0));
+  fileViewerFit.addEventListener("click", () => {
+    applyViewerZoom(1);
+    applyViewerRotation(0);
+  });
+  fileViewerFullscreen.addEventListener("click", async () => {
+    if (!document.fullscreenElement) {
+      await fileViewerPanel.requestFullscreen?.();
+      fileViewerFullscreen.textContent = "全画面を終了";
+    } else {
+      await document.exitFullscreen?.();
+      fileViewerFullscreen.textContent = "全画面";
+    }
+  });
   fileViewerModal.addEventListener("click", (event) => {
     if (event.target === fileViewerModal) closeFileViewer();
   });
