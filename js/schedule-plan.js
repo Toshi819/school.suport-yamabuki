@@ -245,7 +245,7 @@
 
     if (storage && storageApi) {
       try {
-        const folderMarker = storageApi.ref(storage, `subjects/${subject.id}/.folder`);
+        const folderMarker = storageApi.ref(storage, `users/${currentUser.uid}/subjects/${subject.id}/.folder`);
         await storageApi.uploadBytes(folderMarker, new Blob([""], { type: "text/plain" }), {
           contentType: "text/plain",
         });
@@ -255,10 +255,10 @@
     }
   }
 
-  async function removeSubjectFolderMarker(subjectId) {
+  async function removeSubjectFolderMarker(subjectId, uid) {
     if (!storage || !storageApi) return;
     try {
-      await storageApi.deleteObject(storageApi.ref(storage, `subjects/${subjectId}/.folder`));
+      await storageApi.deleteObject(storageApi.ref(storage, `users/${uid}/subjects/${subjectId}/.folder`));
     } catch (error) {
       if (error.code !== "storage/object-not-found") {
         console.warn("Storage folder marker deletion failed:", error);
@@ -307,7 +307,7 @@
       const remainingSubjectIds = new Set(remainingSnapshot.docs.map((item) => item.data().subjectId).filter(Boolean));
       for (const subjectId of removedSubjectIds) {
         if (!remainingSubjectIds.has(subjectId)) {
-          await removeSubjectFolderMarker(subjectId);
+          await removeSubjectFolderMarker(subjectId, currentUser.uid);
           await db.collection("classMembers").doc(`${subjectId}_${currentUser.uid}`).delete();
         }
       }

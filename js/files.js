@@ -37,6 +37,15 @@
     return auth?.currentUser || null;
   }
 
+  function filesPathFor(uid, subjectId, folderId = "root") {
+    const basePath = `users/${uid}/subjects/${subjectId}`;
+    return folderId === "root" ? `${basePath}/files` : `${basePath}/folders/${folderId}/files`;
+  }
+
+  function foldersPathFor(uid, subjectId) {
+    return `users/${uid}/subjects/${subjectId}/folders`;
+  }
+
   function showStatus(message) {
     status.textContent = message;
   }
@@ -181,11 +190,12 @@
   }
 
   async function loadFiles() {
+    const user = getUser();
     const subjectId = classSelect.value;
     const folderId = folderSelect.value || "root";
     list.innerHTML = "";
-    if (!subjectId) return;
-    const filesPath = folderId === "root" ? `subjects/${subjectId}/files` : `subjects/${subjectId}/folders/${folderId}/files`;
+    if (!user || !subjectId) return;
+    const filesPath = filesPathFor(user.uid, subjectId, folderId);
     const snapshot = await db.collection(filesPath).get();
     if (!snapshot.docs.length) {
       list.textContent = "この授業の資料はまだありません。";
@@ -239,11 +249,12 @@
   }
 
   async function loadFolders() {
+    const user = getUser();
     const subjectId = classSelect.value;
     folderSelect.innerHTML = "";
     folderSelect.add(new Option("ルート（未分類）", "root"));
-    if (!subjectId) return;
-    const snapshot = await db.collection(`subjects/${subjectId}/folders`).get();
+    if (!user || !subjectId) return;
+    const snapshot = await db.collection(foldersPathFor(user.uid, subjectId)).get();
     folders = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
     folders.forEach((folder) => folderSelect.add(new Option(folder.name || folder.id, folder.id)));
     refreshUploadSummary();
@@ -264,13 +275,14 @@
     }
   });
   createFolderButton.addEventListener("click", async () => {
+    const user = getUser();
     const subjectId = classSelect.value;
-    if (!subjectId) return;
+    if (!user || !subjectId) return;
     const name = window.prompt("フォルダー名を入力してください");
     if (!name?.trim()) return;
     const folderId = `${Date.now()}_${name}`.replace(/[^a-zA-Z0-9._-]/g, "_");
     try {
-      await db.collection(`subjects/${subjectId}/folders`).doc(folderId).set({ name: name.trim(), createdAt: new Date(), createdBy: getUser()?.uid || "" });
+      await db.collection(foldersPathFor(user.uid, subjectId)).doc(folderId).set({ name: name.trim(), createdAt: new Date(), createdBy: user.uid });
       await loadFolders();
       folderSelect.value = folderId;
       await loadFiles();
@@ -304,11 +316,13 @@
         showStatus(`容量上限を超えるためアップロードできません。選択合計 ${Math.ceil(capacity.totalSize / 1024 / 1024)}MB / 使用量 ${Math.ceil(capacity.used / 1024 / 1024)}MB / 上限 ${Math.ceil(capacity.limit / 1024 / 1024)}MB`);
         return;
       }
-      const filesPath = folderId === "root" ? `subjects/${subjectId}/files` : `subjects/${subjectId}/folders/${folderId}/files`;
+      const filesPath = filesPathFor(user.uid, subjectId, folderId);
       let uploadedCount = 0;
       for (const file of selectedFiles) {
         const fileId = `${Date.now()}_${file.name}`.replace(/[^a-zA-Z0-9._-]/g, "_");
-        const storagePath = folderId === "root" ? `subjects/${subjectId}/files/${fileId}` : `subjects/${subjectId}/folders/${folderId}/files/${fileId}`;
+        const storagePath = folderId === "root"
+          ? `users/${user.uid}/subjects/${subjectId}/files/${fileId}`
+          : `users/${user.uid}/subjects/${subjectId}/folders/${folderId}/files/${fileId}`;
         const storageRef = storageApi.ref(storage, storagePath);
         await storageApi.uploadBytes(storageRef, file, { contentType: file.type || "application/octet-stream" });
         const downloadUrl = await storageApi.getDownloadURL(storageRef);

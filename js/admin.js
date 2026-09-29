@@ -16,7 +16,7 @@
   const filterDay = document.getElementById("subjectFilterDay");
   const filterPeriod = document.getElementById("subjectFilterPeriod");
   const filterSpan = document.getElementById("subjectFilterSpan");
-  let allSubjects = [];
+  let allSubjects = [];　
   let editingSubjectId = "";
 
   document.querySelectorAll("[data-admin-panel]").forEach((tab) => {
@@ -112,16 +112,19 @@
 
   async function loadUploadedBytesByUser() {
     const totals = new Map();
-    const subjects = await db.collection("subjects").get();
-    await Promise.all(subjects.docs.map(async (subject) => {
-      const rootFiles = await db.collection(`subjects/${subject.id}/files`).get();
-      const folders = await db.collection(`subjects/${subject.id}/folders`).get();
-      const folderFiles = await Promise.all(folders.docs.map((folder) => db.collection(`subjects/${subject.id}/folders/${folder.id}/files`).get()));
-      const fileSnapshots = [rootFiles, ...folderFiles];
-      fileSnapshots.forEach((snapshot) => snapshot.docs.forEach((file) => {
-        const data = file.data();
-        if (!data.uploadedBy) return;
-        totals.set(data.uploadedBy, (totals.get(data.uploadedBy) || 0) + Number(data.size || 0));
+    const users = await db.collection("users").get();
+    await Promise.all(users.docs.map(async (user) => {
+      const subjects = await db.collection(`users/${user.id}/subjects`).get();
+      await Promise.all(subjects.docs.map(async (subject) => {
+        const rootFiles = await db.collection(`users/${user.id}/subjects/${subject.id}/files`).get();
+        const folders = await db.collection(`users/${user.id}/subjects/${subject.id}/folders`).get();
+        const folderFiles = await Promise.all(folders.docs.map((folder) => db.collection(`users/${user.id}/subjects/${subject.id}/folders/${folder.id}/files`).get()));
+        const fileSnapshots = [rootFiles, ...folderFiles];
+        fileSnapshots.forEach((snapshot) => snapshot.docs.forEach((file) => {
+          const data = file.data();
+          const ownerUid = data.uploadedBy || user.id;
+          totals.set(ownerUid, (totals.get(ownerUid) || 0) + Number(data.size || 0));
+        }));
       }));
     }));
     return totals;
